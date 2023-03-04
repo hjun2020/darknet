@@ -22,8 +22,8 @@ extern void run_art(int argc, char **argv);
 extern void run_super(int argc, char **argv);
 extern void run_lsd(int argc, char **argv);
 
-extern void run_enhencer(int argc, char **argv);
-extern void test_enhencer(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
+extern void run_enhancer(int argc, char **argv);
+// extern void test_enhencer(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
 extern void temp_test(char *cfgfile);
 
 void average(int argc, char *argv[])
@@ -502,6 +502,8 @@ int main(int argc, char **argv)
     } else if (0 == strcmp(argv[1], "temp-test")){
         printf("you are TESTING!!!\n");
         temp_test(argv[2]);
+    } else if (0 == strcmp(argv[1], "enhancer")){
+        run_enhancer(argc, argv);
     } else {
         fprintf(stderr, "Not an option: %s\n", argv[1]);
     }

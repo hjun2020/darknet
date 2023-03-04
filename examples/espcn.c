@@ -247,3 +247,65 @@ void temp_test(char *cfgfile){
 }
  
 
+void run_enhancer(int argc, char **argv)
+{   
+    char *prefix = find_char_arg(argc, argv, "-prefix", 0);
+    float thresh = find_float_arg(argc, argv, "-thresh", .5);
+    float hier_thresh = find_float_arg(argc, argv, "-hier", .5);
+    int cam_index = find_int_arg(argc, argv, "-c", 0);
+    int frame_skip = find_int_arg(argc, argv, "-s", 0);
+    int avg = find_int_arg(argc, argv, "-avg", 3);
+    if(argc < 4){
+        fprintf(stderr, "usage: %s %s [train/test/valid] [cfg] [weights (optional)]\n", argv[0], argv[1]);
+        return;
+    }
+    char *gpu_list = find_char_arg(argc, argv, "-gpus", 0);
+    char *outfile = find_char_arg(argc, argv, "-out", 0);
+    int *gpus = 0;
+    int gpu = 0;
+    int ngpus = 0;
+    if(gpu_list){
+        printf("%s\n", gpu_list);
+        int len = strlen(gpu_list);
+        ngpus = 1;
+        int i;
+        for(i = 0; i < len; ++i){
+            if (gpu_list[i] == ',') ++ngpus;
+        }
+        gpus = calloc(ngpus, sizeof(int));
+        for(i = 0; i < ngpus; ++i){
+            gpus[i] = atoi(gpu_list);
+            gpu_list = strchr(gpu_list, ',')+1;
+        }
+    } else {
+        gpu = gpu_index;
+        gpus = &gpu;
+        ngpus = 1;
+    }
+
+    int clear = find_arg(argc, argv, "-clear");
+    int fullscreen = find_arg(argc, argv, "-fullscreen");
+    int width = find_int_arg(argc, argv, "-w", 0);
+    int height = find_int_arg(argc, argv, "-h", 0);
+    int fps = find_int_arg(argc, argv, "-fps", 0);
+    //int class = find_int_arg(argc, argv, "-class", 0);
+
+    char *datacfg = argv[3];
+    char *cfg = argv[4];
+    char *weights = (argc > 5) ? argv[5] : 0;
+    char *filename = (argc > 6) ? argv[6]: 0;
+    // if(0==strcmp(argv[2], "test")) test_enhencer(datacfg, cfg, weights, filename, thresh, hier_thresh, outfile, fullscreen);
+    if(0==strcmp(argv[2], "train")) train_enhencer(datacfg, cfg, weights, gpus, ngpus, clear);
+    // else if(0==strcmp(argv[2], "valid")) validate_enhencer(datacfg, cfg, weights, outfile);
+    // else if(0==strcmp(argv[2], "valid2")) validate_enhencer_flip(datacfg, cfg, weights, outfile);
+    // else if(0==strcmp(argv[2], "recall")) validate_enhencer_recall(cfg, weights);
+    // else if(0==strcmp(argv[2], "demo")) {
+    //     list *options = read_data_cfg(datacfg);
+    //     int classes = option_find_int(options, "classes", 20);
+    //     char *name_list = option_find_str(options, "names", "data/names.list");
+    //     char **names = get_labels(name_list);
+    //     demo(cfg, weights, thresh, cam_index, filename, names, classes, frame_skip, prefix, avg, hier_thresh, width, height, fps, fullscreen);
+    // }
+    //else if(0==strcmp(argv[2], "extract")) extract_detector(datacfg, cfg, weights, cam_index, filename, class, thresh, frame_skip);
+    //else if(0==strcmp(argv[2], "censor")) censor_detector(datacfg, cfg, weights, cam_index, filename, class, thresh, frame_skip);
+}
