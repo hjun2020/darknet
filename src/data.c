@@ -7,6 +7,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "stb_image.h"
+#define min(x, y) (x) < (y) ? (x) : (y)
+#define max(x, y) (x) > (y) ? (x) : (y)
+
+
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 list *get_paths(char *filename)
@@ -1127,6 +1132,8 @@ void *load_thread(void *ptr)
         *(a.resized) = letterbox_image(*(a.im), a.w, a.h);
     } else if (a.type == TAG_DATA){
         *a.d = load_data_tag(a.paths, a.n, a.m, a.classes, a.min, a.max, a.size, a.angle, a.aspect, a.hue, a.saturation, a.exposure);
+    } else if (a.type == ENHENCE_DATA){
+        *a.d = load_data_enhence(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure);
     }
     free(ptr);
     return 0;
@@ -1683,3 +1690,136 @@ data *split_data(data d, int part, int total)
     return split;
 }
 
+
+
+data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure)
+{
+    char **random_paths = get_random_paths(paths, n, m);
+    int i;
+    data d = {0};
+    d.shallow = 0;
+
+    d.X.rows = n;
+    d.X.vals = calloc(d.X.rows, sizeof(float*));
+    d.X.cols = h*w*3;
+
+    // d.y = make_matrix(n, 5*boxes);
+    d.y = make_matrix(n, w*h*27);
+    // d.y.rows = n;
+    // d.y.vals = calloc(d.y.rows, sizeof(float*));
+    // d.y.cols = h*w*3;
+
+
+    for(i = 0; i < n; ++i){
+        int w,h,c;
+        // int j=10;
+        unsigned char *data = stbi_load(random_paths[i], &w, &h, &c, 3);
+        // if(w<312 || h < 312){
+        //     // free(data);
+        //     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!: w was %d and h was %d\n", w, h);
+        //     data = stbi_load(random_paths[10], &w, &h, &c, 3);
+
+        //     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!: w was %d and h was %d\n", w, h);
+
+        // }
+        if (!data) {
+            fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", random_paths[i], stbi_failure_reason());
+            exit(0);
+        }
+
+
+        int w_start = rand() % (w-312);
+        int h_start = rand() % (h-312);
+
+        int w_len = min(w, 312);
+        int h_len = min(h, 312);
+        
+        image sized_truth;
+        
+        if(w_len != 312 || h_len != 312){
+            sized_truth = resize_image(load_partial_image_stb(data, 3, 0, w_len, 0, h_len, w,h,c), 312, 312);
+            // save_image(sized_truth, "resized_img");
+            // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!: w was %d and h was %d\n", w, h);
+            // printf("current image size is %d and %d", sized_truth.w, sized_truth.h);
+        } else {
+            sized_truth = load_partial_image_stb(data, 3, w_start, w_len, h_start, h_len, w,h,c);
+            // if(rand()%10 == 0){
+            //     save_image(sized_truth, "unresized_img");
+
+            // }
+        }
+
+
+        // printf("w_start: %d, h_start: %d, w: %d, h: %d\n", w_start, h_start, w, h);
+
+        // image orig = load_image_color(random_paths[i], 0, 0);
+        // printf("original image: %d, %d, %d\n", orig.w, orig.h, orig.c);
+        // image sized = make_image(w, h, orig.c);
+        image sized = resize_image(sized_truth, 104, 104);
+
+        // save_image(sized_truth, "sized_truth");
+        // save_image(sized, "input_x");
+        free(data);
+        // printf("original image: %d, %d, %d\n", sized.w, sized.h, sized.c);
+        // fill_image(sized, .5);
+
+
+        // image sized_truth = resize_image(orig, 3*w,3*h);
+        // fill_image(sized_truth, .5);
+        // printf("%d %d %d %d\n", sized_truth.w, sized_truth.h, sized_truth.c, sized_truth.w*sized_truth.h*sized_truth.c);
+        // printf("%d\n", d.y.cols);
+
+        // float dw = jitter * orig.w;
+        // float dh = jitter * orig.h;
+
+        // float new_ar = (orig.w + rand_uniform(-dw, dw)) / (orig.h + rand_uniform(-dh, dh));
+        //float scale = rand_uniform(.25, 2);
+        // float scale = 1;
+
+        // float nw, nh;
+
+        // if(new_ar < 1){
+        //     nh = scale * h;
+        //     nw = nh * new_ar;
+        // } else {
+        //     nw = scale * w;
+        //     nh = nw / new_ar;
+        // }
+
+        // float dx = rand_uniform(0, w - nw);
+        // float dy = rand_uniform(0, h - nh);
+
+        // place_image(orig, nw, nh, dx, dy, sized);
+        // place_image(orig, nw, nh, dx, dy, sized_truth);
+
+        // random_distort_image(sized, hue, saturation, exposure);
+
+        // int flip = rand()%2;
+        int flip = 0;
+        if(flip) flip_image(sized);
+        d.X.vals[i] = sized.data;
+        // d.y.vals[i] = d.X.vals[i];
+
+
+        // fill_truth_test(random_paths[i], sized_truth.data, d.y.vals[i], d.y.cols, classes, flip, -dx/w, -dy/h, nw/w, nh/h);
+        fill_truth_test(random_paths[i], sized_truth.data, d.y.vals[i], d.y.cols);
+
+
+        free_image(sized_truth);
+    }
+    free(random_paths);
+    return d;
+}
+
+void fill_truth_test(char *path, float *matrix, float *truth, int n)
+{
+
+    int i;
+    for(i=0; i<n; i++){
+        truth[i] = matrix[i];
+    }
+
+    // printf("address of truth is %p, address of matrix %p\n", (void*)truth, (void*)matrix);
+
+
+}
