@@ -1,5 +1,5 @@
-// #ifndef CONVOLUTIONAL_LAYER_H
-// #define CONVOLUTIONAL_LAYER_H
+#ifndef ESPCN_LAYER_H
+#define ESPCN_LAYER_H
 
 #include "cuda.h"
 #include "image.h"
@@ -43,4 +43,4 @@ void reverse_espcn_cpu(float* data_im,
      int channels,  int scale, int height,  int width, float* data_col);
 
 
-// #endif
+#endif

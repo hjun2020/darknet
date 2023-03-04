@@ -22,6 +22,9 @@ extern void run_art(int argc, char **argv);
 extern void run_super(int argc, char **argv);
 extern void run_lsd(int argc, char **argv);
 
+extern void run_enhencer(int argc, char **argv);
+extern void test_enhencer(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
+
 void average(int argc, char *argv[])
 {
     char *cfgfile = argv[2];
