@@ -694,6 +694,12 @@ void set_batch_network(network *net, int b);
 void set_temp_network(network *net, float t);
 image load_image(char *filename, int w, int h, int c);
 image load_image_color(char *filename, int w, int h);
+
+// added for ESPCN
+image load_partial_image_stb(unsigned char *data, int channels, int w_start, int w_len, int h_start, int h_len, int w, int h, int c);
+//image merge_partial_images(images ims, int channel, int w, int h);
+
+////////////////////////////////////////
 image make_image(int w, int h, int c);
 image resize_image(image im, int w, int h);
 void censor_image(image im, int dx, int dy, int w, int h);

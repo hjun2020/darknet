@@ -1289,6 +1289,31 @@ void test_resize(char *filename)
 #endif
 }
 
+image load_partial_image_stb(unsigned char *data, int channels, int w_start, int w_len, int h_start, int h_len, int w,int h,int c)
+{
+    // int w, h, c;
+    // unsigned char *data = stbi_load(filename, &w, &h, &c, channels);
+    // if (!data) {
+    //     fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", filename, stbi_failure_reason());
+    //     exit(0);
+    // }
+    if(channels) c = channels;
+    
+    int i,j,k;
+
+    image im = make_image(w_len, h_len, c);
+    for(k = 0; k < c; ++k){
+        for(j = h_start; j < h_start + h_len; ++j){
+            for(i = w_start; i < w_start + w_len; ++i){
+                int dst_index = (i-w_start) + w_len*(j-h_start) + w_len*h_len*k;
+                int src_index = k + c*i + c*w*j;
+                im.data[dst_index] = (float)data[src_index]/255.;
+            }
+        }
+    }
+    // free(data);
+    return im;
+}
 
 image load_image_stb(char *filename, int channels)
 {
