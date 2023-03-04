@@ -30,3 +30,5 @@ Thumbs.db
 
 yolov3.weights
 /.vscode
+backup/
+darknet53.conv.74
