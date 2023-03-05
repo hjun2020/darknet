@@ -100,7 +100,7 @@ espcn_layer make_espcn_layer(int batch, int h, int w, int c, int n, int groups)
 
 
 #ifdef GPU
-    l.forward_gpu = forward_espcn_layer;
+    l.forward_gpu = forward_espcn_layer_gpu;
     l.backward_gpu = backward_espcn_layer;
     // l.update_gpu = update_convolutional_layer_gpu;
 
