@@ -776,6 +776,7 @@ void forward_network_gpu(network *netp)
             fill_gpu(l.outputs * l.batch, 0, l.delta_gpu, 1);
         }
         l.forward_gpu(l, net);
+        printf("espcn forward executed: %d out of %d\n", i, net.n);
         net.input_gpu = l.output_gpu;
         net.input = l.output;
         if(l.truth) {
