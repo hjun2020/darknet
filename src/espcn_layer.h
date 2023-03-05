@@ -11,7 +11,7 @@ typedef layer espcn_layer;
 typedef layer convolutional_layer;
 
 #ifdef GPU
-void forward_convolutional_layer_gpu(convolutional_layer layer, network net);
+void forward_espcn_layer_gpu(espcn_layer layer, network net);
 void backward_convolutional_layer_gpu(convolutional_layer layer, network net);
 void update_convolutional_layer_gpu(convolutional_layer layer, update_args a);
 

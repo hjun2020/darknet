@@ -164,6 +164,7 @@ void forward_cost_layer_gpu(cost_layer l, network net)
         supp_gpu(l.batch*l.inputs, l.thresh*1./l.inputs, l.delta_gpu, 1);
     }
 
+    printf("============potential error point at cost_layer, this message is form cost_layer.c============\n");
     cuda_pull_array(l.output_gpu, l.output, l.batch*l.inputs);
     l.cost[0] = sum_array(l.output, l.batch*l.inputs);
 }
