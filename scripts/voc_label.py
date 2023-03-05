@@ -23,8 +23,8 @@ def convert(size, box):
     return (x,y,w,h)
 
 def convert_annotation(year, image_id):
-    in_file = open('VOCdevkit/VOC%s/Annotations/%s.xml'%(year, image_id))
-    out_file = open('VOCdevkit/VOC%s/labels/%s.txt'%(year, image_id), 'w')
+    in_file = open('../darknet_train_data/VOCdevkit/VOC%s/Annotations/%s.xml'%(year, image_id))
+    out_file = open('../darknet_train_data/VOCdevkit/VOC%s/labels/%s.txt'%(year, image_id), 'w')
     tree=ET.parse(in_file)
     root = tree.getroot()
     size = root.find('size')
