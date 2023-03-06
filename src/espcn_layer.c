@@ -106,6 +106,7 @@ espcn_layer make_espcn_layer(int batch, int h, int w, int c, int n, int groups)
 
     l.output_gpu = cuda_make_array(l.output, l.batch*out_h*out_w*n);
 
+    l.delta_gpu = cuda_make_array(l.delta, l.batch*out_h*out_w*n);
 
 #ifdef CUDNN
         // cudnnCreateTensorDescriptor(&l.normTensorDesc);

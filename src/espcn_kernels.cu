@@ -15,6 +15,37 @@ extern "C" {
 }
 
 
+__global__ void espcn_backward_gpu_kernel(const float* data_im,
+        const int height_in, const int width_in, 
+        const int espcn_scale,
+        const int height_out, const int width_out,
+        float *data_col)
+{
+    int index = blockIdx.x*blockDim.x+threadIdx.x;
+
+    int w_out = index % width_out;
+    int h_index = index / width_out;
+    int h_out = h_index % height_out;
+    int c_out = index / (width_out * height_out);
+
+    // NEED better name
+    int w_pos = w_out % espcn_scale;
+    int h_pos = h_out % espcn_scale;
+    ///////
+
+
+    int w_in = w_out / espcn_scale;
+    int h_in = h_out / espcn_scale;
+    int c_in = c_out * (espcn_scale * espcn_scale) + h_pos*espcn_scale + w_pos;
+
+    const float* data_im_ptr = data_im;
+    float* data_col_ptr = data_col;
+
+    data_col_ptr[index] = data_im_ptr[c_in * width_in * height_in + width_in * h_in + w_in];
+
+}
+
+
 __global__ void espcn_forward_gpu_kernel(const float* data_im,
         const int height_in, const int width_in, 
         const int espcn_scale,
@@ -62,4 +93,21 @@ void forward_espcn_layer_gpu(espcn_layer l, network net)
         }
     }
 // #endif
+}
+
+void backward_espcn_layer_gpu(espcn_layer l, network net)
+{
+    int i, j;
+    int m = l.n/l.groups;
+    int n = l.out_w*l.out_h;
+    for(i = 0; i < l.batch; ++i){
+        for(j = 0; j < l.groups; ++j){
+            float *a = l.delta_gpu + (i*l.groups + j)*m*n;
+            float *imd = net.delta_gpu + (i*l.groups + j)*l.c/l.groups*l.h*l.w;
+            if (net.delta_gpu) {
+                int num_kernels = l.out_w*l.out_h * 3; 
+                espcn_backward_gpu_kernel<<<(num_kernels+BLOCK-1)/BLOCK, BLOCK>>>(a, l.h, l.w, 3,l.out_h, l.out_w,imd);
+            }
+        }
+    }
 }

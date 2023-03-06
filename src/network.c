@@ -775,7 +775,6 @@ void forward_network_gpu(network *netp)
         if(l.delta_gpu){
             fill_gpu(l.outputs * l.batch, 0, l.delta_gpu, 1);
         }
-        printf("espcn forward executed in network.c: %d out of %d, layer inputs:%d, layer outputs: %d\n", i, net.n, l.inputs, l.outputs);
         l.forward_gpu(l, net);
         net.input_gpu = l.output_gpu;
         net.input = l.output;
