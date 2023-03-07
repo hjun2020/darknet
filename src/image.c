@@ -1297,7 +1297,8 @@ image load_partial_image_stb(unsigned char *data, int channels, int w_start, int
     //     fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", filename, stbi_failure_reason());
     //     exit(0);
     // }
-    if(channels) c = channels;
+    // int c;
+    // if(channels) c = channels;
     
     int i,j,k;
 
@@ -1308,6 +1309,8 @@ image load_partial_image_stb(unsigned char *data, int channels, int w_start, int
                 int dst_index = (i-w_start) + w_len*(j-h_start) + w_len*h_len*k;
                 int src_index = k + c*i + c*w*j;
                 im.data[dst_index] = (float)data[src_index]/255.;
+
+
             }
         }
     }
