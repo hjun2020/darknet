@@ -1726,16 +1726,24 @@ data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int 
             fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", random_paths[i], stbi_failure_reason());
             exit(0);
         }
-
-
-        int w_start = rand() % (w-312);
-        int h_start = rand() % (h-312);
+        int w_start, h_start;
+        if(w>312){
+            w_start = rand() % (w-312);
+        }
+        else{
+            w_start = 0;
+        }
+        if(h>312){
+            h_start = rand() % (h-312);
+        }
+        else{
+            h_start = 0;
+        }
 
         int w_len = min(w, 312);
         int h_len = min(h, 312);
         
         image sized_truth;
-        
         if(w_len != 312 || h_len != 312){
             sized_truth = resize_image(load_partial_image_stb(data, 3, 0, w_len, 0, h_len, w,h,c), 312, 312);
             // save_image(sized_truth, "resized_img");
