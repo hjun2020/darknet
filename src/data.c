@@ -1194,6 +1194,18 @@ pthread_t load_data(load_args args)
     return thread;
 }
 
+
+// added for espcn
+// pthread_t load_espcn_data(load_espcn_args args)
+// {
+//     pthread_t thread;
+//     struct load_espcn_args *ptr = calloc(1, sizeof(struct load_espcn_args));
+//     *ptr = args;
+//     if(pthread_create(&thread, 0, load_threads, ptr)) error("Thread creation failed");
+//     return thread;
+
+// }
+
 data load_data_writing(char **paths, int n, int m, int w, int h, int out_w, int out_h)
 {
     if(m) paths = get_random_paths(paths, n, m);
