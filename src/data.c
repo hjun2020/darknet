@@ -1045,6 +1045,7 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int boxes, in
     data d = {0};
     d.shallow = 0;
 
+    
     d.X.rows = n;
     d.X.vals = calloc(d.X.rows, sizeof(float*));
     d.X.cols = h*w*3;
