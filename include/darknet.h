@@ -579,38 +579,38 @@ typedef struct load_args{
 } load_args;
 
 
-// typedef struct load_espcn_args{
-//     int threads;
-//     char **paths;
-//     char *path;
-//     int n;
-//     int m;
-//     char **labels;
-//     int h;
-//     int w;
-//     int out_w;
-//     int out_h;
-//     int nh;
-//     int nw;
-//     int num_boxes;
-//     int min, max, size;
-//     int classes;
-//     int background;
-//     int scale;
-//     int center;
-//     int coords;
-//     float jitter;
-//     float angle;
-//     float aspect;
-//     float saturation;
-//     float exposure;
-//     float hue;
-//     data *d;
-//     image *im;
-//     image *resized;
-//     data_type type;
-//     tree *hierarchy;
-// } load_espcn_args;
+typedef struct load_espcn_args{
+    int threads;
+    char **paths;
+    char *path;
+    int n;
+    int m;
+    char **labels;
+    int h;
+    int w;
+    int out_w;
+    int out_h;
+    int nh;
+    int nw;
+    int num_boxes;
+    int min, max, size;
+    int classes;
+    int background;
+    int scale;
+    int center;
+    int coords;
+    float jitter;
+    float angle;
+    float aspect;
+    float saturation;
+    float exposure;
+    float hue;
+    data *d;
+    image *im;
+    image *resized;
+    data_type type;
+    tree *hierarchy;
+} load_espcn_args;
 
 typedef struct{
     int id;
