@@ -1810,7 +1810,19 @@ data load_data_espcn_batch(int n, float *im_data, int h_start, int w_start, int 
     d.X.cols = h*w*c;
 
     d.y = make_matrix(n, w*h*3);
+    int j = idx;
     for(i = 0; i < n; ++i){
+        int start_col = j % num_cols;
+        int start_row = j / num_cols;
+        int w_start = w_len * start_col - (w_offset * start_col);
+        int h_start = h_len * start_row - (h_offset * start_row);
+        if(start_col == num_cols - 1){
+            w_start = w_start - w_extra_offset;
+        }
+        if(start_row == num_rows -1){
+            h_start = h_start - h_extra_offset;
+        }
+
         d.X.vals[i] = load_partial_data(im_data, h_start, w_start, h_len, w_len, c, h, w);
     }
 
