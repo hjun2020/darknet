@@ -1136,7 +1136,7 @@ void *load_thread(void *ptr)
     } else if (a.type == ENHENCE_DATA){
         *a.d = load_data_enhence(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure);
     } else if (a.type == ESPCN_DEMO_DATA){
-        *a.d = load_data_enhence(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure);
+        *a.d = load_data_espcn(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure);
     }
     free(ptr);
     return 0;
@@ -1751,7 +1751,19 @@ data *split_data(data d, int part, int total)
     return split;
 }
 
+data load_data_espcn(int n, data *im_data, int h_start, int w_start, int h, int w, int c)
+{
+    int i;
+    data d = {0};
+    d.shallow = 0;
 
+    d.X.rows = n;
+    d.X.vals = calloc(d.X.rows, sizeof(float*));
+    d.X.cols = h*w*c;
+
+    // d.y = make_matrix(n, 5*boxes);
+    d.y = make_matrix(n, w*h*3);
+}
 
 data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure)
 {
@@ -1773,16 +1785,8 @@ data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int 
 
     for(i = 0; i < n; ++i){
         int w,h,c;
-        // int j=10;
         unsigned char *data = stbi_load(random_paths[i], &w, &h, &c, 3);
-        // if(w<312 || h < 312){
-        //     // free(data);
-        //     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!: w was %d and h was %d\n", w, h);
-        //     data = stbi_load(random_paths[10], &w, &h, &c, 3);
 
-        //     printf("!!!!!!!!!!!!!!!!!!!!!!!!!!: w was %d and h was %d\n", w, h);
-
-        // }
         if (!data) {
             fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", random_paths[i], stbi_failure_reason());
             exit(0);

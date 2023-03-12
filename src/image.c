@@ -1289,19 +1289,28 @@ void test_resize(char *filename)
 #endif
 }
 
-image load_partial_image_stb(unsigned char *data, int channels, int w_start, int w_len, int h_start, int h_len, int w,int h,int c)
+float *load_partial_data(float *im, int h_start, int w_start, int h_len, int w_len, int c, int h, int w)
 {
-    // int w, h, c;
-    // unsigned char *data = stbi_load(filename, &w, &h, &c, channels);
-    // if (!data) {
-    //     fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", filename, stbi_failure_reason());
-    //     exit(0);
-    // }
-    // int c;
-    // if(channels) c = channels;
-    
     int i,j,k;
+    float *partial_im;
+    partial_im = calloc(c*h_len*w_len, sizeof(float*));
+    for(k = 0; k < c; ++k){
+        for(j = h_start; j < h_start + h_len; ++j){
+            for(i = w_start; i < w_start + w_len; ++i){
+                int dst_index = (i-w_start) + w_len*(j-h_start) + w_len*h_len*k;
+                int src_index = k + c*i + c*w*j;
+                partial_im[dst_index] = (float)im[src_index];
 
+
+            }
+        }
+    }
+    return partial_im;
+}
+
+image load_partial_image_stb(unsigned char *data, int channels, int w_start, int w_len, int h_start, int h_len, int w,int h,int c)
+{    
+    int i,j,k;
     image im = make_image(w_len, h_len, c);
     for(k = 0; k < c; ++k){
         for(j = h_start; j < h_start + h_len; ++j){
