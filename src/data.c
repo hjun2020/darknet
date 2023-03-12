@@ -1762,10 +1762,9 @@ data load_data_espcn(int n, float *im_data, int h_start, int w_start, int h_len,
     d.X.vals = calloc(d.X.rows, sizeof(float*));
     d.X.cols = h*w*c;
 
-    // d.y = make_matrix(n, 5*boxes);
     d.y = make_matrix(n, w*h*3);
     for(i = 0; i < n; ++i){
-        d.X.vals[i] = load_partial_data(im_data, h_start, w_start, h_len, w_len, c, h, w)
+        d.X.vals[i] = load_partial_data(im_data, h_start, w_start, h_len, w_len, c, h, w);
     }
 
     return d;
