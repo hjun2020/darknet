@@ -1207,6 +1207,7 @@ void *load_espcn_data_threads(void *ptr)
     for(i = 0; i < args.threads; ++i){
         args.d = buffers + i;
         args.n = (i+1) * total/args.threads - i * total/args.threads;
+        args.idx = i * n;
         args.h_start=0;
         args.w_start=0;
 
@@ -1751,7 +1752,7 @@ data *split_data(data d, int part, int total)
     return split;
 }
 
-data load_data_espcn(int n, data *im_data, int h_start, int w_start, int h, int w, int c)
+data load_data_espcn(int n, float *im_data, int h_start, int w_start, int h_len, int w_len, int h, int w, int c, int idx, int num_cols, int num_rows)
 {
     int i;
     data d = {0};
@@ -1763,6 +1764,12 @@ data load_data_espcn(int n, data *im_data, int h_start, int w_start, int h, int 
 
     // d.y = make_matrix(n, 5*boxes);
     d.y = make_matrix(n, w*h*3);
+    for(i = 0; i < n; ++i){
+        d.X.vals[i] = load_partial_data(im_data, h_start, w_start, h_len, w_len, c, h, w)
+    }
+
+    return d;
+
 }
 
 data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure)
@@ -1823,51 +1830,9 @@ data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int 
         }
 
 
-        // printf("w_start: %d, h_start: %d, w: %d, h: %d\n", w_start, h_start, w, h);
-
-        // image orig = load_image_color(random_paths[i], 0, 0);
-        // printf("original image: %d, %d, %d\n", orig.w, orig.h, orig.c);
-        // image sized = make_image(w, h, orig.c);
         image sized = resize_image(sized_truth, 104, 104);
-
-        // save_image(sized_truth, "sized_truth");
-        // save_image(sized, "input_x");
         free(data);
-        // printf("original image: %d, %d, %d\n", sized.w, sized.h, sized.c);
-        // fill_image(sized, .5);
 
-
-        // image sized_truth = resize_image(orig, 3*w,3*h);
-        // fill_image(sized_truth, .5);
-        // printf("%d %d %d %d\n", sized_truth.w, sized_truth.h, sized_truth.c, sized_truth.w*sized_truth.h*sized_truth.c);
-        // printf("%d\n", d.y.cols);
-
-        // float dw = jitter * orig.w;
-        // float dh = jitter * orig.h;
-
-        // float new_ar = (orig.w + rand_uniform(-dw, dw)) / (orig.h + rand_uniform(-dh, dh));
-        //float scale = rand_uniform(.25, 2);
-        // float scale = 1;
-
-        // float nw, nh;
-
-        // if(new_ar < 1){
-        //     nh = scale * h;
-        //     nw = nh * new_ar;
-        // } else {
-        //     nw = scale * w;
-        //     nh = nw / new_ar;
-        // }
-
-        // float dx = rand_uniform(0, w - nw);
-        // float dy = rand_uniform(0, h - nh);
-
-        // place_image(orig, nw, nh, dx, dy, sized);
-        // place_image(orig, nw, nh, dx, dy, sized_truth);
-
-        // random_distort_image(sized, hue, saturation, exposure);
-
-        // int flip = rand()%2;
         int flip = 0;
         if(flip) flip_image(sized);
         d.X.vals[i] = sized.data;
