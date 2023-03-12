@@ -1817,8 +1817,13 @@ float *batch_2_im_data(int n, float *batch_data, int h_in, int w_in, int c_in, i
         if(num_cols-1== col){
             w_start = w_start - w_extra_offset;
         }
-        for(m=0; m<c_in; m++){
-
+        int src_idx = idx*c_in*h_in*w_in;
+        for(j=0; m < c_in; m++){
+            for(k=0; k < h_in; k++){
+                for(m=0; m < w_in; m++){
+                    int dst_idx = c_in*w_out*h_out + (h_start+k) * w_out + (w_start+m)
+                }
+            }
         }
     }
 }
