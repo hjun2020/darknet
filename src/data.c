@@ -1093,6 +1093,18 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int boxes, in
     return d;
 }
 
+
+//added for espcn
+void *load_thread_espcn(void *ptr)
+{
+    load_args_espcn a = *(struct load_args_espcn*)ptr;
+    if (a.type == ESPCN_DEMO_DATA){
+        *a.d = load_data_espcn_batch(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure);
+    }
+    free(ptr);
+    return 0;
+}
+
 void *load_thread(void *ptr)
 {
     //printf("Loading data: %d\n", rand());
@@ -1135,11 +1147,19 @@ void *load_thread(void *ptr)
         *a.d = load_data_tag(a.paths, a.n, a.m, a.classes, a.min, a.max, a.size, a.angle, a.aspect, a.hue, a.saturation, a.exposure);
     } else if (a.type == ENHENCE_DATA){
         *a.d = load_data_enhence(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure);
-    } else if (a.type == ESPCN_DEMO_DATA){
-        *a.d = load_data_espcn(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure);
-    }
+    } 
     free(ptr);
     return 0;
+}
+
+//added for espcn
+pthread_t load_data_in_thread_espcn(load_args_espcn args)
+{
+    pthread_t thread;
+    struct load_args_espcn *ptr = calloc(1, sizeof(struct load_args_espcn));
+    *ptr = args;
+    if(pthread_create(&thread, 0, load_thread_espcn, ptr)) error("Thread creation failed");
+    return thread;
 }
 
 pthread_t load_data_in_thread(load_args args)
@@ -1153,16 +1173,43 @@ pthread_t load_data_in_thread(load_args args)
 
 
 //added for espcn
-pthread_t load_espcn_data_in_thread(load_espcn_args args)
+pthread_t load_data_in_thread_espcn(load_args_espcn args)
 {
     pthread_t thread;
-    struct load_espcn_args *ptr = calloc(1, sizeof(struct load_espcn_args));
+    struct load_args_espcn *ptr = calloc(1, sizeof(struct load_args_espcn));
     *ptr = args;
-    if(pthread_create(&thread, 0, load_thread, ptr)) error("Thread creation failed");
+    if(pthread_create(&thread, 0, load_thread_espcn, ptr)) error("Thread creation failed");
     return thread;
 }
 
-
+void *load_threads_espcn(void *ptr)
+{
+    int i;
+    load_args_espcn args = *(load_args_espcn *)ptr;
+    if (args.threads == 0) args.threads = 1;
+    data *out = args.d;
+    int total = args.n;
+    free(ptr);
+    data *buffers = calloc(args.threads, sizeof(data));
+    pthread_t *threads = calloc(args.threads, sizeof(pthread_t));
+    for(i = 0; i < args.threads; ++i){
+        args.d = buffers + i;
+        args.n = (i+1) * total/args.threads - i * total/args.threads;
+        threads[i] = load_data_in_thread_espcn(args);
+    }
+    for(i = 0; i < args.threads; ++i){
+        pthread_join(threads[i], 0);
+    }
+    *out = concat_datas(buffers, args.threads);
+    out->shallow = 0;
+    for(i = 0; i < args.threads; ++i){
+        buffers[i].shallow = 1;
+        free_data(buffers[i]);
+    }
+    free(buffers);
+    free(threads);
+    return 0;
+}
 
 void *load_threads(void *ptr)
 {
@@ -1245,12 +1292,12 @@ pthread_t load_data(load_args args)
 
 
 // added for espcn
-pthread_t load_espcn_data(load_espcn_args args)
+pthread_t load_data_espcn(load_args_espcn args)
 {
     pthread_t thread;
-    struct load_espcn_args *ptr = calloc(1, sizeof(struct load_espcn_args));
+    struct load_args_espcn *ptr = calloc(1, sizeof(struct load_args_espcn));
     *ptr = args;
-    if(pthread_create(&thread, 0, load_threads, ptr)) error("Thread creation failed");
+    if(pthread_create(&thread, 0, load_threads_espcn, ptr)) error("Thread creation failed");
     return thread;
 
 }
@@ -1752,7 +1799,7 @@ data *split_data(data d, int part, int total)
     return split;
 }
 
-data load_data_espcn(int n, float *im_data, int h_start, int w_start, int h_len, int w_len, int h, int w, int c, int idx, int num_cols, int num_rows)
+data load_data_espcn_batch(int n, float *im_data, int h_start, int w_start, int h_len, int w_len, int h, int w, int c, int idx, int num_cols, int num_rows)
 {
     int i;
     data d = {0};

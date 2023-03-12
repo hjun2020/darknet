@@ -579,7 +579,7 @@ typedef struct load_args{
 } load_args;
 
 
-typedef struct load_espcn_args{
+typedef struct load_args_espcn{
     int threads;
     char **paths;
     char *path;
@@ -610,7 +610,7 @@ typedef struct load_espcn_args{
     image *resized;
     data_type type;
     tree *hierarchy;
-} load_espcn_args;
+} load_args_espcn;
 
 typedef struct{
     int id;
