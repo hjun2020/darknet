@@ -1799,6 +1799,30 @@ data *split_data(data d, int part, int total)
     return split;
 }
 
+float *batch_2_im_data(int n, float *batch_data, int h_in, int w_in, int c_in, int num_rows, int num_cols, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, float *im_data)
+{
+    int i,j,k,m;
+    for(i=0; i<n; i++){
+        int col = i % num_cols;
+        int row = i / num_cols;
+        int w_start = (w_in - w_offset) * col;
+        if(num_cols-1 == col){
+            w_start = w_start - w_extra_offset;
+        }
+        int h_start = (h_in - h_offset) * row;
+        if(num_rows-1== row){
+            h_start = h_start - h_extra_offset;
+        }
+        int w_start = (w_in - w_offset) * col;
+        if(num_cols-1== col){
+            w_start = w_start - w_extra_offset;
+        }
+        for(m=0; m<c_in; m++){
+
+        }
+    }
+}
+
 data load_data_espcn_batch(int n, float *im_data, int h_start, int w_start, int h_len, int w_len, int h, int w, int c, int idx, int num_cols, int num_rows)
 {
     int i;
