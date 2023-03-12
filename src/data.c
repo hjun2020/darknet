@@ -1135,6 +1135,8 @@ void *load_thread(void *ptr)
         *a.d = load_data_tag(a.paths, a.n, a.m, a.classes, a.min, a.max, a.size, a.angle, a.aspect, a.hue, a.saturation, a.exposure);
     } else if (a.type == ENHENCE_DATA){
         *a.d = load_data_enhence(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure);
+    } else if (a.type == ESPCN_DEMO_DATA){
+        *a.d = load_data_enhence(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure);
     }
     free(ptr);
     return 0;
@@ -1149,6 +1151,19 @@ pthread_t load_data_in_thread(load_args args)
     return thread;
 }
 
+
+//added for espcn
+pthread_t load_espcn_data_in_thread(load_espcn_args args)
+{
+    pthread_t thread;
+    struct load_espcn_args *ptr = calloc(1, sizeof(struct load_espcn_args));
+    *ptr = args;
+    if(pthread_create(&thread, 0, load_thread, ptr)) error("Thread creation failed");
+    return thread;
+}
+
+
+
 void *load_threads(void *ptr)
 {
     int i;
@@ -1162,6 +1177,39 @@ void *load_threads(void *ptr)
     for(i = 0; i < args.threads; ++i){
         args.d = buffers + i;
         args.n = (i+1) * total/args.threads - i * total/args.threads;
+        threads[i] = load_data_in_thread(args);
+    }
+    for(i = 0; i < args.threads; ++i){
+        pthread_join(threads[i], 0);
+    }
+    *out = concat_datas(buffers, args.threads);
+    out->shallow = 0;
+    for(i = 0; i < args.threads; ++i){
+        buffers[i].shallow = 1;
+        free_data(buffers[i]);
+    }
+    free(buffers);
+    free(threads);
+    return 0;
+}
+
+// added for espcn
+void *load_espcn_data_threads(void *ptr)
+{
+    int i;
+    load_espcn_args args = *(load_espcn_args *)ptr;
+    if (args.threads == 0) args.threads = 1;
+    data *out = args.d;
+    int total = args.n;
+    free(ptr);
+    data *buffers = calloc(args.threads, sizeof(data));
+    pthread_t *threads = calloc(args.threads, sizeof(pthread_t));
+    for(i = 0; i < args.threads; ++i){
+        args.d = buffers + i;
+        args.n = (i+1) * total/args.threads - i * total/args.threads;
+        args.h_start=0;
+        args.w_start=0;
+
         threads[i] = load_data_in_thread(args);
     }
     for(i = 0; i < args.threads; ++i){
