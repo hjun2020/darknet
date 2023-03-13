@@ -542,7 +542,7 @@ typedef struct{
 } data;
 
 typedef enum {
-    CLASSIFICATION_DATA, DETECTION_DATA, CAPTCHA_DATA, REGION_DATA, IMAGE_DATA, COMPARE_DATA, WRITING_DATA, SWAG_DATA, TAG_DATA, OLD_CLASSIFICATION_DATA, STUDY_DATA, DET_DATA, SUPER_DATA, LETTERBOX_DATA, REGRESSION_DATA, SEGMENTATION_DATA, INSTANCE_DATA, ISEG_DATA, ENHENCE_DATA 
+    CLASSIFICATION_DATA, DETECTION_DATA, CAPTCHA_DATA, REGION_DATA, IMAGE_DATA, COMPARE_DATA, WRITING_DATA, SWAG_DATA, TAG_DATA, OLD_CLASSIFICATION_DATA, STUDY_DATA, DET_DATA, SUPER_DATA, LETTERBOX_DATA, REGRESSION_DATA, SEGMENTATION_DATA, INSTANCE_DATA, ISEG_DATA, ENHENCE_DATA, ESPCN_DEMO_DATA
 } data_type;
 
 typedef struct load_args{
@@ -581,35 +581,28 @@ typedef struct load_args{
 
 typedef struct load_args_espcn{
     int threads;
-    char **paths;
-    char *path;
-    int n;
-    int m;
-    char **labels;
-    int h;
-    int w;
+    int in_w;
+    int in_h;
+    int in_c;
     int out_w;
     int out_h;
-    int nh;
-    int nw;
-    int num_boxes;
-    int min, max, size;
-    int classes;
-    int background;
-    int scale;
-    int center;
-    int coords;
-    float jitter;
-    float angle;
-    float aspect;
-    float saturation;
-    float exposure;
-    float hue;
+    int out_c;
+    int w_offset;
+    int h_offset;
+    int w_extra_offset;
+    int h_extra_offset;
+    int n;
+    int h_len;
+    int w_len;
+    int h_start;
+    int w_start;
+    int idx;
+    int num_cols;
+    int num_rows;
     data *d;
     image *im;
-    image *resized;
     data_type type;
-    tree *hierarchy;
+    float *im_data;
 } load_args_espcn;
 
 typedef struct{

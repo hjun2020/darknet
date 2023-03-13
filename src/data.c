@@ -1099,7 +1099,7 @@ void *load_thread_espcn(void *ptr)
 {
     load_args_espcn a = *(struct load_args_espcn*)ptr;
     if (a.type == ESPCN_DEMO_DATA){
-        *a.d = load_data_espcn_batch(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure);
+        *a.d = load_data_espcn_batch(a.n, a.im_data, a.h_start, a.w_start, a.h_len, a.w_len, a.out_h, a.out_w, a.out_c, a.idx, a.h_offset, a.w_offset, a.h_extra_offset, a.w_extra_offset, a.num_cols, a.num_rows);
     }
     free(ptr);
     return 0;
@@ -1799,9 +1799,10 @@ data *split_data(data d, int part, int total)
     return split;
 }
 
-float *batch_2_im_data(int n, float *batch_data, int h_in, int w_in, int c_in, int num_rows, int num_cols, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, float *im_data)
+float *batch_2_im_data(int n, int idx, float *batch_data, int h_in, int w_in, int c_in, int h_out, int w_out, int c_out, int num_rows, int num_cols, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, float *im_data)
 {
     int i,j,k,m;
+    int l = idx;
     for(i=0; i<n; i++){
         int col = i % num_cols;
         int row = i / num_cols;
@@ -1813,22 +1814,22 @@ float *batch_2_im_data(int n, float *batch_data, int h_in, int w_in, int c_in, i
         if(num_rows-1== row){
             h_start = h_start - h_extra_offset;
         }
-        int w_start = (w_in - w_offset) * col;
-        if(num_cols-1== col){
-            w_start = w_start - w_extra_offset;
-        }
-        int src_idx = idx*c_in*h_in*w_in;
+
+        int src_idx = l*c_in*h_in*w_in;
         for(j=0; m < c_in; m++){
             for(k=0; k < h_in; k++){
                 for(m=0; m < w_in; m++){
-                    int dst_idx = c_in*w_out*h_out + (h_start+k) * w_out + (w_start+m)
+                    int dst_idx = c_in*w_out*h_out + (h_start+k) * w_out + (w_start+m);
+                    int src_idx = l*c_in*h_in*w_in + w_in * k + + m ;
+                    im_data[dst_idx] = batch_data[src_idx];
                 }
             }
         }
+        l++;
     }
 }
 
-data load_data_espcn_batch(int n, float *im_data, int h_start, int w_start, int h_len, int w_len, int h, int w, int c, int idx, int num_cols, int num_rows)
+data load_data_espcn_batch(int n, float *im_data, int h_start, int w_start, int h_len, int w_len, int h, int w, int c, int idx, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, int num_cols, int num_rows)
 {
     int i;
     data d = {0};
