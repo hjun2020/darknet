@@ -251,6 +251,7 @@ void data_test()
 {
     
     load_args_espcn args = {0};
+    printf("test data!!!!!\n");
     // image orig = load_image_color(random_paths[i], 0, 0);
     // args.coords = l.coords;
     // args.paths = paths;
@@ -315,7 +316,7 @@ void run_enhancer(int argc, char **argv)
     char *filename = (argc > 6) ? argv[6]: 0;
     // if(0==strcmp(argv[2], "test")) test_enhencer(datacfg, cfg, weights, filename, thresh, hier_thresh, outfile, fullscreen);
     if(0==strcmp(argv[2], "train")) train_enhencer(datacfg, cfg, weights, gpus, ngpus, clear);
-    // if(0==strcmp(argv[2], "data_test")) train_enhencer(datacfg, cfg, weights, gpus, ngpus, clear);
+    if(0==strcmp(argv[2], "data_test")) data_test();
     // else if(0==strcmp(argv[2], "valid")) validate_enhencer(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "valid2")) validate_enhencer_flip(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "recall")) validate_enhencer_recall(cfg, weights);

@@ -1099,7 +1099,7 @@ void *load_thread_espcn(void *ptr)
 {
     load_args_espcn a = *(struct load_args_espcn*)ptr;
     if (a.type == ESPCN_DEMO_DATA){
-        load_data_espcn_batch(a.n, a.im_data, a.h_start, a.w_start, a.h_len, a.w_len, a.out_h, a.out_w, a.out_c, a.idx, a.h_offset, a.w_offset, a.h_extra_offset, a.w_extra_offset, a.num_cols, a.num_rows);
+        *a.d = load_data_espcn_batch(a.n, a.im_data, a.h_start, a.w_start, a.h_len, a.w_len, a.out_h, a.out_w, a.out_c, a.idx, a.h_offset, a.w_offset, a.h_extra_offset, a.w_extra_offset, a.num_cols, a.num_rows);
     }
     free(ptr);
     return 0;
