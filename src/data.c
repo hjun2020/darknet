@@ -1099,7 +1099,7 @@ void *load_thread_espcn(void *ptr)
 {
     load_args_espcn a = *(struct load_args_espcn*)ptr;
     if (a.type == ESPCN_DEMO_DATA){
-        *a.d = load_data_espcn_batch(a.n, a.im_data, a.h_start, a.w_start, a.h_len, a.w_len, a.out_h, a.out_w, a.out_c, a.idx, a.h_offset, a.w_offset, a.h_extra_offset, a.w_extra_offset, a.num_cols, a.num_rows);
+        load_data_espcn_batch(a.n, a.im_data, a.h_start, a.w_start, a.h_len, a.w_len, a.out_h, a.out_w, a.out_c, a.idx, a.h_offset, a.w_offset, a.h_extra_offset, a.w_extra_offset, a.num_cols, a.num_rows);
     }
     free(ptr);
     return 0;
@@ -1153,14 +1153,14 @@ void *load_thread(void *ptr)
 }
 
 //added for espcn
-pthread_t load_data_in_thread_espcn(load_args_espcn args)
-{
-    pthread_t thread;
-    struct load_args_espcn *ptr = calloc(1, sizeof(struct load_args_espcn));
-    *ptr = args;
-    if(pthread_create(&thread, 0, load_thread_espcn, ptr)) error("Thread creation failed");
-    return thread;
-}
+// pthread_t load_data_in_thread_espcn(load_args_espcn args)
+// {
+//     pthread_t thread;
+//     struct load_args_espcn *ptr = calloc(1, sizeof(struct load_args_espcn));
+//     *ptr = args;
+//     if(pthread_create(&thread, 0, load_thread_espcn, ptr)) error("Thread creation failed");
+//     return thread;
+// }
 
 pthread_t load_data_in_thread(load_args args)
 {
@@ -1244,7 +1244,7 @@ void *load_threads(void *ptr)
 void *load_espcn_data_threads(void *ptr)
 {
     int i;
-    load_espcn_args args = *(load_espcn_args *)ptr;
+    load_args_espcn args = *(load_args_espcn *)ptr;
     if (args.threads == 0) args.threads = 1;
     data *out = args.d;
     int total = args.n;
@@ -1254,11 +1254,11 @@ void *load_espcn_data_threads(void *ptr)
     for(i = 0; i < args.threads; ++i){
         args.d = buffers + i;
         args.n = (i+1) * total/args.threads - i * total/args.threads;
-        args.idx = i * n;
+        args.idx = i *args.n;
         args.h_start=0;
         args.w_start=0;
 
-        threads[i] = load_data_in_thread(args);
+        threads[i] = load_data_in_thread_espcn(args);
     }
     for(i = 0; i < args.threads; ++i){
         pthread_join(threads[i], 0);

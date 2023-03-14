@@ -33,6 +33,8 @@ data load_data_regression(char **paths, int n, int m, int classes, int min, int 
 data load_go(char *filename);
 data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure);
 
+// added for espcn
+data load_data_espcn_batch(int n, float *im_data, int h_start, int w_start, int h_len, int w_len, int h, int w, int c, int idx, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, int num_cols, int num_rows);
 
 data load_data_writing(char **paths, int n, int m, int w, int h, int out_w, int out_h);
 

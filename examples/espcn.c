@@ -251,18 +251,18 @@ void data_test()
 {
     
     load_args_espcn args = {0};
-    image orig = load_image_color(random_paths[i], 0, 0);
-    args.coords = l.coords;
-    args.paths = paths;
-    args.n = imgs;
-    args.m = plist->size;
-    args.classes = classes;
-    args.jitter = jitter;
-    args.num_boxes = l.max_boxes;
-    args.d = &buffer;
-    args.type = DETECTION_DATA;
-    //args.type = INSTANCE_DATA;
-    args.threads = 64;
+    // image orig = load_image_color(random_paths[i], 0, 0);
+    // args.coords = l.coords;
+    // args.paths = paths;
+    // args.n = imgs;
+    // args.m = plist->size;
+    // args.classes = classes;
+    // args.jitter = jitter;
+    // args.num_boxes = l.max_boxes;
+    // args.d = &buffer;
+    // args.type = DETECTION_DATA;
+    // //args.type = INSTANCE_DATA;
+    // args.threads = 64;
 }
  
 
@@ -281,7 +281,7 @@ void run_enhancer(int argc, char **argv)
     char *gpu_list = find_char_arg(argc, argv, "-gpus", 0);
     char *outfile = find_char_arg(argc, argv, "-out", 0);
     int *gpus = 0;
-    int gpu = 0;
+    int gpu = 0;  
     int ngpus = 0;
     if(gpu_list){
         printf("%s\n", gpu_list);
@@ -315,7 +315,7 @@ void run_enhancer(int argc, char **argv)
     char *filename = (argc > 6) ? argv[6]: 0;
     // if(0==strcmp(argv[2], "test")) test_enhencer(datacfg, cfg, weights, filename, thresh, hier_thresh, outfile, fullscreen);
     if(0==strcmp(argv[2], "train")) train_enhencer(datacfg, cfg, weights, gpus, ngpus, clear);
-    if(0==strcmp(argv[2], "data_test")) train_enhencer(datacfg, cfg, weights, gpus, ngpus, clear);
+    // if(0==strcmp(argv[2], "data_test")) train_enhencer(datacfg, cfg, weights, gpus, ngpus, clear);
     // else if(0==strcmp(argv[2], "valid")) validate_enhencer(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "valid2")) validate_enhencer_flip(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "recall")) validate_enhencer_recall(cfg, weights);
