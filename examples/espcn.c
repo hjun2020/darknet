@@ -247,23 +247,56 @@ void temp_test(char *cfgfile){
 
 }
 
-void data_test()
+void data_test(char *filename)
 {
     
     load_args_espcn args = {0};
     printf("test data!!!!!\n");
-    // image orig = load_image_color(random_paths[i], 0, 0);
-    // args.coords = l.coords;
-    // args.paths = paths;
-    // args.n = imgs;
-    // args.m = plist->size;
-    // args.classes = classes;
-    // args.jitter = jitter;
-    // args.num_boxes = l.max_boxes;
-    // args.d = &buffer;
-    // args.type = DETECTION_DATA;
-    // //args.type = INSTANCE_DATA;
-    // args.threads = 64;
+    image orig = load_image_color(filename, 0, 0);
+    printf("%d, %d\n", orig.h, orig.w);
+    args.in_c = 3;
+    args.in_h = 104;
+    args.in_w = 104;
+    args.out_c = 3;
+    args.out_h = orig.h;
+    args.out_w = orig.w;
+    args.num_rows = args.out_h / args.in_h + 1;
+    args.num_cols = args.out_w / args.in_h + 1;
+    args.h_offset = (args.in_h * args.num_rows - args.out_h) / (args.num_rows - 1);
+    args.w_offset = (args.in_w * args.num_cols - args.out_w) / (args.num_cols - 1);
+    args.h_extra_offset = (args.in_h * args.num_rows - args.out_h) % (args.num_rows - 1);
+    args.w_extra_offset = (args.in_w * args.num_cols - args.out_w) % (args.num_cols - 1);
+
+    args.h_len = 104;
+    args.w_len = 104;
+    args.im_data = orig.data;
+
+    printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
+    
+
+    // int threads;
+    // int in_w;
+    // int in_h;
+    // int in_c;
+    // int out_w;
+    // int out_h;
+    // int out_c;
+    // int w_offset;
+    // int h_offset;
+    // int w_extra_offset;
+    // int h_extra_offset;
+    // int n;
+    // int h_len;
+    // int w_len;
+    // int h_start;
+    // int w_start;
+    // int idx;
+    // int num_cols;
+    // int num_rows;
+    // data *d;
+    // image *im;
+    // data_type type;
+    // float *im_data;
 }
  
 
@@ -316,7 +349,7 @@ void run_enhancer(int argc, char **argv)
     char *filename = (argc > 6) ? argv[6]: 0;
     // if(0==strcmp(argv[2], "test")) test_enhencer(datacfg, cfg, weights, filename, thresh, hier_thresh, outfile, fullscreen);
     if(0==strcmp(argv[2], "train")) train_enhencer(datacfg, cfg, weights, gpus, ngpus, clear);
-    if(0==strcmp(argv[2], "data_test")) data_test();
+    if(0==strcmp(argv[2], "data_test")) data_test(filename);
     // else if(0==strcmp(argv[2], "valid")) validate_enhencer(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "valid2")) validate_enhencer_flip(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "recall")) validate_enhencer_recall(cfg, weights);

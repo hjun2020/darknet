@@ -1099,7 +1099,7 @@ void *load_thread_espcn(void *ptr)
 {
     load_args_espcn a = *(struct load_args_espcn*)ptr;
     if (a.type == ESPCN_DEMO_DATA){
-        *a.d = load_data_espcn_batch(a.n, a.im_data, a.h_start, a.w_start, a.h_len, a.w_len, a.out_h, a.out_w, a.out_c, a.idx, a.h_offset, a.w_offset, a.h_extra_offset, a.w_extra_offset, a.num_cols, a.num_rows);
+        *a.d = load_data_espcn_batch(a.n, a.im_data, a.h_len, a.w_len, a.out_h, a.out_w, a.out_c, a.idx, a.h_offset, a.w_offset, a.h_extra_offset, a.w_extra_offset, a.num_cols, a.num_rows);
     }
     free(ptr);
     return 0;
@@ -1829,7 +1829,7 @@ float *batch_2_im_data(int n, int idx, float *batch_data, int h_in, int w_in, in
     }
 }
 
-data load_data_espcn_batch(int n, float *im_data, int h_start, int w_start, int h_len, int w_len, int h, int w, int c, int idx, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, int num_cols, int num_rows)
+data load_data_espcn_batch(int n, float *im_data, int h_len, int w_len, int h, int w, int c, int idx, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, int num_cols, int num_rows)
 {
     int i;
     data d = {0};
@@ -1854,6 +1854,7 @@ data load_data_espcn_batch(int n, float *im_data, int h_start, int w_start, int 
         }
 
         d.X.vals[i] = load_partial_data(im_data, h_start, w_start, h_len, w_len, c, h, w);
+        j++;
     }
 
     return d;
