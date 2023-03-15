@@ -270,9 +270,13 @@ void data_test(char *filename)
     args.h_len = 104;
     args.w_len = 104;
     args.im_data = orig.data;
+    args.threads = 48;
+    args.n = 48;
+    args.type = ESPCN_DEMO_DATA;
 
     printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
     
+    load_data_espcn(args);
 
     // int threads;
     // int in_w;

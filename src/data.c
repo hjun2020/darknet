@@ -1099,6 +1099,7 @@ void *load_thread_espcn(void *ptr)
 {
     load_args_espcn a = *(struct load_args_espcn*)ptr;
     if (a.type == ESPCN_DEMO_DATA){
+        printf("in data.c, load_thread_espcn: %d\n", a.idx);
         *a.d = load_data_espcn_batch(a.n, a.im_data, a.h_len, a.w_len, a.out_h, a.out_w, a.out_c, a.idx, a.h_offset, a.w_offset, a.h_extra_offset, a.w_extra_offset, a.num_cols, a.num_rows);
     }
     free(ptr);
@@ -1179,6 +1180,7 @@ pthread_t load_data_in_thread_espcn(load_args_espcn args)
     struct load_args_espcn *ptr = calloc(1, sizeof(struct load_args_espcn));
     *ptr = args;
     if(pthread_create(&thread, 0, load_thread_espcn, ptr)) error("Thread creation failed");
+    printf("in data.c load_data_in_thread_espcn %d\n", args.idx);
     return thread;
 }
 
@@ -1195,6 +1197,8 @@ void *load_threads_espcn(void *ptr)
     for(i = 0; i < args.threads; ++i){
         args.d = buffers + i;
         args.n = (i+1) * total/args.threads - i * total/args.threads;
+        args.idx = i*args.n;
+        printf("in data.c: %d, %d, %d\n", i, args.idx, args.n);
         threads[i] = load_data_in_thread_espcn(args);
     }
     for(i = 0; i < args.threads; ++i){
@@ -1841,6 +1845,7 @@ data load_data_espcn_batch(int n, float *im_data, int h_len, int w_len, int h, i
 
     d.y = make_matrix(n, w*h*3);
     int j = idx;
+    printf("in data.c load_data_espcn_batch %d\n", idx);
     for(i = 0; i < n; ++i){
         int start_col = j % num_cols;
         int start_row = j / num_cols;
