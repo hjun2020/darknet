@@ -1204,6 +1204,7 @@ void *load_threads_espcn(void *ptr)
     for(i = 0; i < args.threads; ++i){
         pthread_join(threads[i], 0);
     }
+    printf("in data.c, all joined!!!\n");
     *out = concat_datas(buffers, args.threads);
     out->shallow = 0;
     for(i = 0; i < args.threads; ++i){

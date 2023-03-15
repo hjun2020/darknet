@@ -276,7 +276,15 @@ void data_test(char *filename)
 
     printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
     
-    load_data_espcn(args);
+    // pthread_t load_thread = load_data_espcn(args);
+    // load_data_espcn(args);
+    pthread_t load_thread = load_data_espcn(args);
+
+    sleep(10);
+
+
+    // pthread_join(load_thread, 0);
+
 
     // int threads;
     // int in_w;
