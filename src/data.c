@@ -1804,6 +1804,38 @@ data *split_data(data d, int part, int total)
     return split;
 }
 
+
+float *data_2_im_float(data d, int h_in, int w_in, int c_in, int h_out, int w_out, int c_out, int num_rows, int num_cols, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, float *im_data)
+{
+    int i,j,k,m;
+    int n = d.X.rows;
+    
+    float *buffer;
+    for(i=0; i<n; i++){
+        buffer = d.X.vals[i];
+        int col = i % num_cols;
+        int row = i / num_cols;
+        int w_start = (w_in - w_offset) * col;
+        if(num_cols-1 == col){
+            w_start = w_start - w_extra_offset;
+        }
+        int h_start = (h_in - h_offset) * row;
+        if(num_rows-1== row){
+            h_start = h_start - h_extra_offset;
+        }
+
+        for(j=0; j < c_in; j++){
+            for(k=0; k < h_in; k++){
+                for(m=0; m < w_in; m++){
+                    int dst_idx = j*w_out*h_out + (h_start+k) * w_out + (w_start+m);
+                    int src_idx = j*h_in*w_in + w_in * k + + m ;
+                    im_data[dst_idx] = buffer[src_idx];
+                }
+            }
+        }
+    }
+}
+
 float *batch_2_im_data(int n, int idx, float *batch_data, int h_in, int w_in, int c_in, int h_out, int w_out, int c_out, int num_rows, int num_cols, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, float *im_data)
 {
     int i,j,k,m;

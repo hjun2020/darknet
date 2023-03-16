@@ -280,11 +280,12 @@ void data_test(char *filename)
     
     // pthread_t load_thread = load_data_espcn(args);
     // load_data_espcn(args);
+    double time=what_time_is_it_now();
     pthread_t load_thread = load_data_espcn(args);
 
-
-    // sleep(1);
     pthread_join(load_thread, 0);
+
+    printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
 
     return;
 
