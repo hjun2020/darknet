@@ -629,6 +629,8 @@ typedef struct list{
     node *back;
 } list;
 
+pthread_t load_data_espcn(load_args_espcn args);
+
 pthread_t load_data(load_args args);
 list *read_data_cfg(char *filename);
 list *read_cfg(char *filename);

@@ -251,6 +251,7 @@ void data_test(char *filename)
 {
     
     load_args_espcn args = {0};
+    data buffer;
     printf("test data!!!!!\n");
     image orig = load_image_color(filename, 0, 0);
     printf("%d, %d\n", orig.h, orig.w);
@@ -272,6 +273,7 @@ void data_test(char *filename)
     args.im_data = orig.data;
     args.threads = 48;
     args.n = 48;
+    args.d = &buffer;
     args.type = ESPCN_DEMO_DATA;
 
     printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
@@ -280,11 +282,11 @@ void data_test(char *filename)
     // load_data_espcn(args);
     pthread_t load_thread = load_data_espcn(args);
 
-    sleep(10);
 
+    // sleep(1);
+    pthread_join(load_thread, 0);
 
-    // pthread_join(load_thread, 0);
-
+    return;
 
     // int threads;
     // int in_w;
