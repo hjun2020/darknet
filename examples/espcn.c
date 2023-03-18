@@ -293,7 +293,7 @@ void data_test(char *filename)
 
 
     image im = data2im(args);
-    save_image(im, "test_data/test12.jpg");
+    save_image(im, "test_data/test1233.jpg");
     free_image(im);
     printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
 

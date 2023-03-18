@@ -1203,7 +1203,7 @@ void *load_threads_espcn(void *ptr)
     for(i = 0; i < args.threads; ++i){
         pthread_join(threads[i], 0);
     }
-    *out = concat_datas(buffers, args.threads);
+    *out = concat_datas_reverse(buffers, args.threads);
     out->shallow = 0;
     for(i = 0; i < args.threads; ++i){
         buffers[i].shallow = 1;
@@ -1507,6 +1507,20 @@ data concat_data(data d1, data d2)
     d.w = d1.w;
     d.h = d1.h;
     return d;
+}
+
+
+//added for espcn
+data concat_datas_reverse(data *d, int n)
+{
+    int i;
+    data out = {0};
+    for(i = 0; i < n; ++i){
+        data new = concat_data(out, d[i]);
+        free_data(out);
+        out = new;
+    }
+    return out;
 }
 
 data concat_datas(data *d, int n)

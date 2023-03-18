@@ -48,6 +48,10 @@ void translate_data_rows(data d, float s);
 void randomize_data(data d);
 data *split_data(data d, int part, int total);
 data concat_datas(data *d, int n);
+//added for espcn
+data concat_datas_reverse(data *d, int n);
+
+
 void fill_truth(char *path, char **labels, int k, float *truth);
 
 #endif
