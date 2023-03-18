@@ -494,6 +494,25 @@ void top_predictions(network *net, int k, int *index)
 }
 
 
+//added for espcn
+// void *network_predict_data(network *net, data d)
+// {
+    // assert(d.X.rows % net->batch == 0);
+    // int batch = net->batch;
+    // int n = d.X.rows / batch;
+
+    // int i;
+    // float sum = 0;
+    // for(i = 0; i < n; ++i){
+    //     get_next_batch(d, batch, i*batch, net->input, net->truth);
+    //     float err = train_network_datum(net);
+    //     sum += err;
+    // }
+    // forward_network(net);
+    // return (float)sum/(n*batch);
+    // return 0;
+// }
+
 float *network_predict(network *net, float *input)
 {
     network orig = *net;

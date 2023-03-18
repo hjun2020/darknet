@@ -247,8 +247,30 @@ void temp_test(char *cfgfile){
 
 }
 
-void data_test(char *filename)
+void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, int *gpus, int ngpus, int clear)
 {
+    list *options = read_data_cfg(datacfg);
+    char *train_images = option_find_str(options, "train", "data/train.list");
+    char *backup_directory = option_find_str(options, "backup", "/backup/");
+
+
+    srand(time(0));
+    char *base = basecfg(cfgfile);
+    float avg_loss = -1;
+    network **nets = calloc(ngpus, sizeof(network));
+
+    srand(time(0));
+    int seed = rand();
+    int i;
+    for(i = 0; i < ngpus; ++i){
+#ifdef GPU
+        cuda_set_device(gpus[i]);
+#endif
+        nets[i] = load_network(cfgfile, weightfile, clear);
+        nets[i]->learning_rate *= ngpus;
+    }
+    srand(time(0));
+    network *net = nets[0];
     
     load_args_espcn args = {0};
     data buffer;
@@ -298,30 +320,6 @@ void data_test(char *filename)
     printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
 
     return;
-
-    // int threads;
-    // int in_w;
-    // int in_h;
-    // int in_c;
-    // int out_w;
-    // int out_h;
-    // int out_c;
-    // int w_offset;
-    // int h_offset;
-    // int w_extra_offset;
-    // int h_extra_offset;
-    // int n;
-    // int h_len;
-    // int w_len;
-    // int h_start;
-    // int w_start;
-    // int idx;
-    // int num_cols;
-    // int num_rows;
-    // data *d;
-    // image *im;
-    // data_type type;
-    // float *im_data;
 }
  
 
@@ -374,7 +372,7 @@ void run_enhancer(int argc, char **argv)
     char *filename = (argc > 6) ? argv[6]: 0;
     // if(0==strcmp(argv[2], "test")) test_enhencer(datacfg, cfg, weights, filename, thresh, hier_thresh, outfile, fullscreen);
     if(0==strcmp(argv[2], "train")) train_enhencer(datacfg, cfg, weights, gpus, ngpus, clear);
-    if(0==strcmp(argv[2], "data_test")) data_test(filename);
+    if(0==strcmp(argv[2], "data_test")) data_test(datacfg, cfg, weights, filename, gpus, ngpus, clear);
     // else if(0==strcmp(argv[2], "valid")) validate_enhencer(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "valid2")) validate_enhencer_flip(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "recall")) validate_enhencer_recall(cfg, weights);
