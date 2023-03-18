@@ -1198,7 +1198,6 @@ void *load_threads_espcn(void *ptr)
         args.d = buffers + i;
         args.n = (i+1) * total/args.threads - i * total/args.threads;
         args.idx = i*args.n;
-        // printf("in data.c: %d, %d, %d\n", i, args.idx, args.n);
         threads[i] = load_data_in_thread_espcn(args);
     }
     for(i = 0; i < args.threads; ++i){
@@ -1206,7 +1205,6 @@ void *load_threads_espcn(void *ptr)
     }
     *out = concat_datas(buffers, args.threads);
     out->shallow = 0;
-    // printf("in data.c, right here potential error when concat_data return!!!!!!!\n");
     for(i = 0; i < args.threads; ++i){
         buffers[i].shallow = 1;
         free_data(buffers[i]);
@@ -1804,6 +1802,59 @@ data *split_data(data d, int part, int total)
     return split;
 }
 
+
+image data2im(load_args_espcn args)
+{
+    data d = *args.d;
+    int out_h = args.out_h;
+    int out_w = args.out_w;
+    int out_c = args.out_c;
+    int n = d.X.rows;
+    int num_cols = args.num_cols;
+    int num_rows = args.num_rows;
+    int in_w = args.in_w;
+    int in_h = args.in_h;
+    int in_c = args.in_c;
+    int i;
+    int w_offset = args.w_offset;
+    int h_offset = args.h_offset;
+    int w_extra_offset = args.w_extra_offset;
+    int h_extra_offset = args.h_extra_offset;
+    image im = make_image(args.out_w, args.out_h, args.out_c);
+    // float *im_data = calloc(out_h*out_w*out_c, sizeof(float));
+    
+
+    float *buffer;
+    for(i=0; i<n; i++){
+        buffer = d.X.vals[i];
+        int col = i % num_cols;
+        int row = i / num_cols;
+        int w_start = (in_w - w_offset) * col;
+        if(num_cols-1 == col){
+            w_start = w_start - w_extra_offset;
+        }
+        int h_start = (in_h - h_offset) * row;
+        if(num_rows-1== row){
+            h_start = h_start - h_extra_offset;
+        }
+        int j,k,m;
+        for(j=0; j < in_c; j++){
+            for(k=0; k < in_h; k++){
+                for(m=0; m < in_w; m++){
+                    int dst_idx = j*out_w*out_h + (h_start+k) * out_w + (w_start+m);
+                    int src_idx = j*in_h*in_w + in_w * k +  m ;
+                    // printf("%d, %d!!!!!!!!!!!!\n", dst_idx, src_idx);
+                    im.data[dst_idx] = buffer[src_idx];
+                    // printf("%f\n", buffer[src_idx]);
+                    
+                }
+            }
+        }
+    }
+    // im.data = im_data;
+    // free(im_data);
+    return im;
+}
 
 float *data_2_im_float(data d, int h_in, int w_in, int c_in, int h_out, int w_out, int c_out, int num_rows, int num_cols, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, float *im_data)
 {

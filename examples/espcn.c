@@ -276,6 +276,10 @@ void data_test(char *filename)
     args.d = &buffer;
     args.type = ESPCN_DEMO_DATA;
 
+    // float *im_data = calloc(args.out_c*args.out_h*args.out_w, sizeof(float));
+    // args.im_data = im_data;
+
+
     printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
     
     // pthread_t load_thread = load_data_espcn(args);
@@ -284,7 +288,13 @@ void data_test(char *filename)
     pthread_t load_thread = load_data_espcn(args);
 
     pthread_join(load_thread, 0);
+    // sleep(1);
 
+
+
+    image im = data2im(args);
+    save_image(im, "test_data/test12.jpg");
+    free_image(im);
     printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
 
     return;
