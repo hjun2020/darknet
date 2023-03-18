@@ -306,18 +306,22 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     
     // pthread_t load_thread = load_data_espcn(args);
     // load_data_espcn(args);
-    double time=what_time_is_it_now();
     pthread_t load_thread = load_data_espcn(args);
 
     pthread_join(load_thread, 0);
     // sleep(1);
+    double time=what_time_is_it_now();
+    for(int t=0; t<1000; t++){
+
+        network_predict_data(net, buffer);
+    }
+    printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
 
 
 
     image im = data2im(args);
-    save_image(im, "test_data/test1233.jpg");
+    // save_image(im, "test_data/test1233.jpg");
     free_image(im);
-    printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
 
     return;
 }
