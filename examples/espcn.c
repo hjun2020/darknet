@@ -312,24 +312,31 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     args.type = ESPCN_DEMO_DATA;
 
 
-    printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
-    printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset_pred, args.w_offset_pred, args.h_extra_offset_pred, args.w_extra_offset_pred);
+    // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
+    // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset_pred, args.w_offset_pred, args.h_extra_offset_pred, args.w_extra_offset_pred);
 
     pthread_t load_thread = load_data_espcn(args);
 
     pthread_join(load_thread, 0);
     // sleep(1);
-    // double time=what_time_is_it_now();
 
     data d = *args.d;
-    matrix pred = network_predict_data(net, d);
+    // should be fixed
+    d.X.cols = args.in_w*args.in_h*args.in_c;
+    //////////////
 
-    image temp = make_image(312,312,3);
+    double time=what_time_is_it_now();
+    for(int t=0; t<100; t++){
+
+        network_predict_data(net, d);
+    }
+
+    // image temp = make_image(312,312,3);
     // temp.data = network_predict(net, d.X.vals[18]);
-    temp.data = pred.vals[18];
-    save_image(temp, "data_test/test999");    
+    // temp.data = pred.vals[18];
+    // save_image(temp, "data_test/test999");    
 
-    // printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
+    printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
 
 
 
