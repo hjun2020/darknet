@@ -1816,8 +1816,60 @@ data *split_data(data d, int part, int total)
     return split;
 }
 
+image float2im(load_args_espcn args, float *pred)
+{
+    data d = *args.d;
+    int out_h = args.out_h_pred;
+    int out_w = args.out_w_pred;
+    int out_c = args.out_c_pred;
+    int n = d.X.rows;
+    int num_cols = args.num_cols;
+    int num_rows = args.num_rows;
+    int in_w = args.in_w_pred;
+    int in_h = args.in_h_pred;
+    int in_c = args.in_c_pred;
+    int i;
+    int w_offset = args.w_offset_pred;
+    int h_offset = args.h_offset_pred;
+    int w_extra_offset = args.w_extra_offset_pred;
+    int h_extra_offset = args.h_extra_offset_pred;
+    image im = make_image(out_w, out_h, out_c);    
 
-image data2im(load_args_espcn args)
+    // float *buffer = pred;
+    for(i=0; i<n; i++){
+        // buffer = pred.vals[i];
+        int col = i % num_cols;
+        int row = i / num_cols;
+        int w_start = (in_w - w_offset) * col;
+        if(num_cols-1 == col){
+            w_start = w_start - w_extra_offset;
+        }
+        int h_start = (in_h - h_offset) * row;
+        if(num_rows-1== row){
+            h_start = h_start - h_extra_offset;
+        }
+        int j,k,m;
+        int src_start = in_w * in_h * in_c * i;
+        for(j=0; j < in_c; j++){
+            for(k=0; k < in_h; k++){
+                // printf("channel: %d\n",k);
+                for(m=0; m < in_w; m++){
+                    int dst_idx = j*out_w*out_h + (h_start+k) * out_w + (w_start+m);
+                    int src_idx = src_start+  j*in_h*in_w + in_w * k +  m ;
+                    // printf("%d, %d!!!!!!!!!!!!\n", dst_idx, src_idx);
+                    im.data[dst_idx] = pred[src_idx];
+                    // printf("%f\n", buffer[src_idx]);
+                    
+                }
+            }
+        }
+    }
+    // im.data = im_data;
+    // free(im_data);
+    return im;    
+}
+
+image data2im(load_args_espcn args, matrix pred)
 {
     data d = *args.d;
     int out_h = args.out_h_pred;
@@ -1840,7 +1892,7 @@ image data2im(load_args_espcn args)
 
     float *buffer;
     for(i=0; i<n; i++){
-        buffer = d.X.vals[i];
+        buffer = pred.vals[i];
         int col = i % num_cols;
         int row = i / num_cols;
         int w_start = (in_w - w_offset) * col;
@@ -1854,6 +1906,7 @@ image data2im(load_args_espcn args)
         int j,k,m;
         for(j=0; j < in_c; j++){
             for(k=0; k < in_h; k++){
+                // printf("channel: %d\n",k);
                 for(m=0; m < in_w; m++){
                     int dst_idx = j*out_w*out_h + (h_start+k) * out_w + (w_start+m);
                     int src_idx = j*in_h*in_w + in_w * k +  m ;

@@ -290,7 +290,7 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     args.h_extra_offset = (args.in_h * args.num_rows - args.out_h) % (args.num_rows - 1);
     args.w_extra_offset = (args.in_w * args.num_cols - args.out_w) % (args.num_cols - 1);
 
-    args.espcn_scale = 1;
+    args.espcn_scale = 3;
 
     args.in_w_pred = args.in_w * args.espcn_scale;
     args.in_h_pred = args.in_h * args.espcn_scale;
@@ -331,29 +331,28 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     temp_in.data = p.vals[18];
     float *pred_buffer;
 
-    double time=what_time_is_it_now();
     image temp = make_image(312,312,3);
     for(int t=0; t<1; t++){
-
         pred_buffer = network_predict_data_to_float(net, d);
         for(int t=0; t<312*312*3; t++){
             temp.data[t] = pred_buffer[312*312*3*18+ t];
         }
-        free(pred_buffer);
+        // free(pred_buffer);
     }
 
     // temp.data = network_predict(net, d.X.vals[18]);
     // temp.data = pred.vals[18];
     save_image(temp, "data_test/test999");    
 
-    printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
 
     save_image(temp_in, "data_test/test9991");    
 
 
+    double time=what_time_is_it_now();
 
-    image im = data2im(args);
-    // save_image(im, "data_test/test1233.jpg");
+    image im = float2im(args, pred_buffer);
+    printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
+    save_image(im, "data_test/test1233.jpg");
     free_image(im);
 
     return;
