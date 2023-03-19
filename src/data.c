@@ -1820,21 +1820,21 @@ data *split_data(data d, int part, int total)
 image data2im(load_args_espcn args)
 {
     data d = *args.d;
-    int out_h = args.out_h;
-    int out_w = args.out_w;
-    int out_c = args.out_c;
+    int out_h = args.out_h_pred;
+    int out_w = args.out_w_pred;
+    int out_c = args.out_c_pred;
     int n = d.X.rows;
     int num_cols = args.num_cols;
     int num_rows = args.num_rows;
-    int in_w = args.in_w;
-    int in_h = args.in_h;
-    int in_c = args.in_c;
+    int in_w = args.in_w_pred;
+    int in_h = args.in_h_pred;
+    int in_c = args.in_c_pred;
     int i;
-    int w_offset = args.w_offset;
-    int h_offset = args.h_offset;
-    int w_extra_offset = args.w_extra_offset;
-    int h_extra_offset = args.h_extra_offset;
-    image im = make_image(args.out_w, args.out_h, args.out_c);
+    int w_offset = args.w_offset_pred;
+    int h_offset = args.h_offset_pred;
+    int w_extra_offset = args.w_extra_offset_pred;
+    int h_extra_offset = args.h_extra_offset_pred;
+    image im = make_image(out_w, out_h, out_c);
     // float *im_data = calloc(out_h*out_w*out_c, sizeof(float));
     
 

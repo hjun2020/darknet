@@ -290,6 +290,19 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     args.h_extra_offset = (args.in_h * args.num_rows - args.out_h) % (args.num_rows - 1);
     args.w_extra_offset = (args.in_w * args.num_cols - args.out_w) % (args.num_cols - 1);
 
+    args.espcn_scale = 1;
+
+    args.in_w_pred = args.in_w * args.espcn_scale;
+    args.in_h_pred = args.in_h * args.espcn_scale;
+    args.in_c_pred = args.in_c;
+    args.out_w_pred = args.out_w * args.espcn_scale;
+    args.out_h_pred = args.out_h * args.espcn_scale;
+    args.out_c_pred = args.out_c;
+    args.w_offset_pred = args.w_offset * args.espcn_scale;
+    args.h_offset_pred = args.h_offset * args.espcn_scale;
+    args.w_extra_offset_pred = args.w_extra_offset * args.espcn_scale;
+    args.h_extra_offset_pred = args.h_extra_offset * args.espcn_scale; 
+
     args.h_len = 104;
     args.w_len = 104;
     args.im_data = orig.data;
@@ -298,29 +311,30 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     args.d = &buffer;
     args.type = ESPCN_DEMO_DATA;
 
-    // float *im_data = calloc(args.out_c*args.out_h*args.out_w, sizeof(float));
-    // args.im_data = im_data;
-
 
     printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
-    
-    // pthread_t load_thread = load_data_espcn(args);
-    // load_data_espcn(args);
+    printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset_pred, args.w_offset_pred, args.h_extra_offset_pred, args.w_extra_offset_pred);
+
     pthread_t load_thread = load_data_espcn(args);
 
     pthread_join(load_thread, 0);
     // sleep(1);
-    double time=what_time_is_it_now();
-    for(int t=0; t<1000; t++){
+    // double time=what_time_is_it_now();
 
-        network_predict_data(net, buffer);
-    }
-    printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
+    data d = *args.d;
+    matrix pred = network_predict_data(net, d);
+
+    image temp = make_image(312,312,3);
+    // temp.data = network_predict(net, d.X.vals[18]);
+    temp.data = pred.vals[18];
+    save_image(temp, "data_test/test999");    
+
+    // printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
 
 
 
     image im = data2im(args);
-    // save_image(im, "test_data/test1233.jpg");
+    // save_image(im, "data_test/test1233.jpg");
     free_image(im);
 
     return;

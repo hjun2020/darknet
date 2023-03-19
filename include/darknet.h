@@ -599,6 +599,21 @@ typedef struct load_args_espcn{
     int idx;
     int num_cols;
     int num_rows;
+
+    int in_w_pred;
+    int in_h_pred;
+    int in_c_pred;
+    int out_w_pred;
+    int out_h_pred;
+    int out_c_pred;
+    int w_offset_pred;
+    int h_offset_pred;
+    int w_extra_offset_pred;
+    int h_extra_offset_pred;
+
+    int espcn_scale;
+
+
     data *d;
     image *im;
     data_type type;
