@@ -325,18 +325,30 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     d.X.cols = args.in_w*args.in_h*args.in_c;
     //////////////
 
-    double time=what_time_is_it_now();
-    for(int t=0; t<100; t++){
+    image temp_in = make_image(312,312,3);
+    matrix p = network_predict_data(net, d);
+    printf("DONE!!\n");
+    temp_in.data = p.vals[18];
+    float *pred_buffer;
 
-        network_predict_data(net, d);
+    double time=what_time_is_it_now();
+    image temp = make_image(312,312,3);
+    for(int t=0; t<1; t++){
+
+        pred_buffer = network_predict_data_to_float(net, d);
+        for(int t=0; t<312*312*3; t++){
+            temp.data[t] = pred_buffer[312*312*3*18+ t];
+        }
+        free(pred_buffer);
     }
 
-    // image temp = make_image(312,312,3);
     // temp.data = network_predict(net, d.X.vals[18]);
     // temp.data = pred.vals[18];
-    // save_image(temp, "data_test/test999");    
+    save_image(temp, "data_test/test999");    
 
     printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
+
+    save_image(temp_in, "data_test/test9991");    
 
 
 

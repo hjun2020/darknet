@@ -632,6 +632,32 @@ matrix network_predict_data_multi(network *net, data test, int n)
     return pred;   
 }
 
+//added for espcn
+float *network_predict_data_to_float(network *net, data test)
+{
+    int i,j,b;
+    int k = net->outputs;
+    matrix pred = make_matrix(test.X.rows, k);
+    float *X = calloc(net->batch*test.X.cols, sizeof(float));
+    float *out;
+    for(i = 0; i < test.X.rows; i += net->batch){
+
+        for(b = 0; b < net->batch; ++b){
+            if(i+b == test.X.rows) break;
+            memcpy(X+b*test.X.cols, test.X.vals[i+b], test.X.cols*sizeof(float));
+        }
+
+        out = network_predict(net, X);
+        // for(b = 0; b < net->batch; ++b){
+        //     if(i+b == test.X.rows) break;
+        //     for(j = 0; j < k; ++j){
+        //         pred.vals[i+b][j] = out[j+b*k];
+        //     }
+        // }
+    }
+    free(X);
+    return out;   
+}
 
 
 matrix network_predict_data(network *net, data test)
@@ -639,7 +665,6 @@ matrix network_predict_data(network *net, data test)
     int i,j,b;
     int k = net->outputs;
     matrix pred = make_matrix(test.X.rows, k);
-    // printf("in network.c: %d, %d, %d\n", net->batch, test.X.cols, net->outputs);
     float *X = calloc(net->batch*test.X.cols, sizeof(float));
     for(i = 0; i < test.X.rows; i += net->batch){
 

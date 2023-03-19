@@ -743,6 +743,7 @@ image load_image_color(char *filename, int w, int h);
 image load_partial_image_stb(unsigned char *data, int channels, int w_start, int w_len, int h_start, int h_len, int w, int h, int c);
 float *load_partial_data(float *im, int h_start, int w_start, int h_len, int w_len, int c, int h, int w);
 image data2im(load_args_espcn args);
+float *network_predict_data_to_float(network *net, data test);
 
 //image merge_partial_images(images ims, int channel, int w, int h);
 
