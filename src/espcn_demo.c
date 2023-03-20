@@ -18,8 +18,14 @@ static image **demo_alphabet;
 static int demo_classes;
 
 static network *net;
-static image buff [3];
-static image buff_letter[3];
+
+
+static image buff_input_im [3];
+static data buff_net_input [3];
+static float** buff_pred [3];
+static image buff_output_im [3];
+
+
 static int buff_index = 0;
 static void * cap;
 static float fps = 0;
@@ -63,33 +69,17 @@ void remember_network(network *net)
     }
 }
 
-detection *avg_predictions(network *net, int *nboxes)
-{
-    int i, j;
-    int count = 0;
-    fill_cpu(demo_total, 0, avg, 1);
-    for(j = 0; j < demo_frame; ++j){
-        axpy_cpu(demo_total, 1./demo_frame, predictions[j], 1, avg, 1);
-    }
-    for(i = 0; i < net->n; ++i){
-        layer l = net->layers[i];
-        if(l.type == YOLO || l.type == REGION || l.type == DETECTION){
-            memcpy(l.output, avg + count, sizeof(float) * l.outputs);
-            count += l.outputs;
-        }
-    }
-    detection *dets = get_network_boxes(net, buff[0].w, buff[0].h, demo_thresh, demo_hier, 0, 1, nboxes);
-    return dets;
-}
 
-void *detect_in_thread(void *ptr)
+
+void *espcn_in_thread(void *ptr)
 {
     running = 1;
     float nms = .4;
 
     layer l = net->layers[net->n-1];
     float *X = buff_letter[(buff_index+2)%3].data;
-    network_predict(net, X);
+    // network_predict(net, X);
+    network_predict_data_to_float(net, buff_net_input[(buff_index+2)%3]);
 
     /*
        if(l.type == DETECTION){
@@ -124,12 +114,11 @@ static void *image_to_data_batch(image im, void *ptr)
 void *fetch_in_thread(void *ptr)
 {
     free_image(buff[buff_index]);
-    buff[buff_index] = get_image_from_stream(cap);
+    buff_input_im[buff_index] = get_image_from_stream(cap);
     if(buff[buff_index].data == 0) {
         demo_done = 1;
         return 0;
     }
-    letterbox_image_into(buff[buff_index], net->w, net->h, buff_letter[buff_index]);
     return 0;
 }
 
