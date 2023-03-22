@@ -254,13 +254,13 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     char *backup_directory = option_find_str(options, "backup", "/backup/");
 
 
-    srand(time(0));
+    // srand(time(0));
     char *base = basecfg(cfgfile);
     float avg_loss = -1;
     network **nets = calloc(ngpus, sizeof(network));
 
-    srand(time(0));
-    int seed = rand();
+    // srand(time(0));
+    // int seed = rand();
     int i;
     for(i = 0; i < ngpus; ++i){
 #ifdef GPU
@@ -269,7 +269,7 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
         nets[i] = load_network(cfgfile, weightfile, clear);
         nets[i]->learning_rate *= ngpus;
     }
-    srand(time(0));
+    // srand(time(0));
     network *net = nets[0];
     
     load_args_espcn args = {0};
@@ -278,8 +278,8 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     image orig = load_image_color(filename, 0, 0);
     printf("%d, %d\n", orig.h, orig.w);
     args.in_c = 3;
-    args.in_h = 104;
-    args.in_w = 104;
+    args.in_h = net->h;
+    args.in_w = net->w;
     args.out_c = 3;
     args.out_h = orig.h;
     args.out_w = orig.w;
@@ -306,11 +306,27 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     args.h_len = 104;
     args.w_len = 104;
     args.im_data = orig.data;
-    args.threads = 48;
-    args.n = 48;
+    args.threads = args.num_cols * args.num_rows;
+    args.n = args.num_cols * args.num_rows;
     args.d = &buffer;
     args.type = ESPCN_DEMO_DATA;
 
+    net->batch = args.n;
+    net->subdivisions = 1;
+
+
+    float **pred_buffer [3];
+    pred_buffer[0] = calloc(net->outputs*args.n, sizeof(float));
+    pred_buffer[1] = calloc(net->outputs*args.n, sizeof(float));
+    pred_buffer[2] = calloc(net->outputs*args.n, sizeof(float));
+
+
+    data data_buffer [3];    
+    for(int t=0; t<3; t++){
+        data_buffer[t].w = args.in_w;
+        data_buffer[t].X.cols = 3;
+
+    }
 
     // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
     // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset_pred, args.w_offset_pred, args.h_extra_offset_pred, args.w_extra_offset_pred);
@@ -318,40 +334,20 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     pthread_t load_thread = load_data_espcn(args);
 
     pthread_join(load_thread, 0);
-    // sleep(1);
 
     data d = *args.d;
     // should be fixed
     d.X.cols = args.in_w*args.in_h*args.in_c;
     //////////////
 
-    image temp_in = make_image(312,312,3);
-    matrix p = network_predict_data(net, d);
-    printf("DONE!!\n");
-    temp_in.data = p.vals[18];
-    float *pred_buffer;
-
-    image temp = make_image(312,312,3);
-    for(int t=0; t<1; t++){
-        pred_buffer = network_predict_data_to_float(net, d);
-        for(int t=0; t<312*312*3; t++){
-            temp.data[t] = pred_buffer[312*312*3*18+ t];
-        }
-        // free(pred_buffer);
-    }
-
-    // temp.data = network_predict(net, d.X.vals[18]);
-    // temp.data = pred.vals[18];
-    save_image(temp, "data_test/test999");    
-
-
-    save_image(temp_in, "data_test/test9991");    
-
-
     double time=what_time_is_it_now();
-
-    image im = float2im(args, pred_buffer);
+    for(int t=0; t<1000; t++){
+        memcpy(pred_buffer[t%3], network_predict_data_to_float(net, d), net->outputs*args.n*sizeof(float));
+    }
     printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
+
+
+    image im = float2im(args, pred_buffer[2]);
     save_image(im, "data_test/test1233.jpg");
     free_image(im);
 
