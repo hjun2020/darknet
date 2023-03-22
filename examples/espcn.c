@@ -242,21 +242,45 @@ static void print_cocos(FILE *fp, char *image_path, detection *dets, int num_box
 // }
 
 void temp_test(char *cfgfile){
-    network *net = parse_network_cfg(cfgfile);
+    // network *net = parse_network_cfg(cfgfile);
     
 
 }
 
 static float **pred_buffer [3];
-static float **out_im_buffer [3];
+// static float **out_im_buffer [3];
 static int buff_index = 0;
+static network *net;
+static image out_im_buffer [3];
 
+
+
+// void *merge_in_thread(void *ptr)
+// {
+//     float2im()
+//     return 0;
+// }
+
+
+void *predict_in_thread(void *ptr)
+{
+    load_args_espcn args = *(load_args_espcn *)ptr;
+    data d = *args.d;
+    // should be fixed
+    d.X.cols = args.in_w*args.in_h*args.in_c;
+    memcpy(pred_buffer[buff_index%3], network_predict_data_to_float(net, d), net->outputs*args.n*sizeof(float));
+    
+    return 0;
+}
 
 void *merge_in_thread(void *ptr)
 {
-    float2im()
+    load_args_espcn args = *(load_args_espcn *)ptr;
+
+    out_im_buffer[(buff_index+1)%3] = float2im(args, pred_buffer[(buff_index+1)%3]);    
     return 0;
 }
+
 
 
 
@@ -283,7 +307,7 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
         nets[i]->learning_rate *= ngpus;
     }
     // srand(time(0));
-    network *net = nets[0];
+    net = nets[0];
     
     load_args_espcn args = {0};
     data buffer;
@@ -335,6 +359,9 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
 
     data data_buffer [3];    
 
+    pthread_t predict_thread;
+    pthread_t merge_thread;
+
 
     // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
     // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset_pred, args.w_offset_pred, args.h_extra_offset_pred, args.w_extra_offset_pred);
@@ -348,17 +375,23 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     d.X.cols = args.in_w*args.in_h*args.in_c;
     //////////////
 
-
+    struct load_args_espcn *ptr = calloc(1, sizeof(struct load_args_espcn));
     double time=what_time_is_it_now();
-    for(int t=0; t<1000; t++){
-        memcpy(pred_buffer[t%3], network_predict_data_to_float(net, d), net->outputs*args.n*sizeof(float));
+    for(int t=0; t<50; t++){
+        *ptr = args;
+        // memcpy(pred_buffer[t%3], network_predict_data_to_float(net, d), net->outputs*args.n*sizeof(float));
+        if(pthread_create(&predict_thread, 0, predict_in_thread, ptr)) error("Thread creation failed");
+        if(pthread_create(&merge_thread, 0, merge_in_thread, ptr)) error("Thread creation failed");
+        pthread_join(predict_thread,0);
+        pthread_join(merge_thread,0);
+        buff_index = (buff_index+1)%3;
     }
     printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
 
 
-    image im = float2im(args, pred_buffer[2]);
-    save_image(im, "data_test/test1233.jpg");
-    free_image(im);
+    // image im = float2im(args, pred_buffer[2]);
+    save_image(out_im_buffer[2], "data_test/test1233.jpg");
+    // free_image(im);
 
     return;
 }
