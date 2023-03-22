@@ -247,6 +247,19 @@ void temp_test(char *cfgfile){
 
 }
 
+static float **pred_buffer [3];
+static float **out_im_buffer [3];
+static int buff_index = 0;
+
+
+void *merge_in_thread(void *ptr)
+{
+    float2im()
+    return 0;
+}
+
+
+
 void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, int *gpus, int ngpus, int clear)
 {
     list *options = read_data_cfg(datacfg);
@@ -315,18 +328,13 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     net->subdivisions = 1;
 
 
-    float **pred_buffer [3];
+
     pred_buffer[0] = calloc(net->outputs*args.n, sizeof(float));
     pred_buffer[1] = calloc(net->outputs*args.n, sizeof(float));
     pred_buffer[2] = calloc(net->outputs*args.n, sizeof(float));
 
-
     data data_buffer [3];    
-    for(int t=0; t<3; t++){
-        data_buffer[t].w = args.in_w;
-        data_buffer[t].X.cols = 3;
 
-    }
 
     // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
     // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset_pred, args.w_offset_pred, args.h_extra_offset_pred, args.w_extra_offset_pred);
@@ -339,6 +347,7 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     // should be fixed
     d.X.cols = args.in_w*args.in_h*args.in_c;
     //////////////
+
 
     double time=what_time_is_it_now();
     for(int t=0; t<1000; t++){
