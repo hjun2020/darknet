@@ -397,7 +397,7 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
 
     return;
 }
- 
+  
 
 void run_enhancer(int argc, char **argv)
 {   
