@@ -1,5 +1,6 @@
 #include "darknet.h"
 #include "stb_image.h"
+#include "image.h"
 
 static int coco_ids[] = {1,2,3,4,5,6,7,8,9,10,11,13,14,15,16,17,18,19,20,21,22,23,24,25,27,28,31,32,33,34,35,36,37,38,39,40,41,42,43,44,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,67,70,72,73,74,75,76,77,78,79,80,81,82,84,85,86,87,88,89,90};
 
@@ -255,24 +256,30 @@ static image input_im_buffer [3];
 static float **network_input_buffer [3];
 
 
+// void *predict_in_thread(void *ptr)
+// {
+//     load_args_espcn args = *(load_args_espcn *)ptr;
+//     data d = *args.d;
+//     // should be fixed
+//     d.X.cols = args.in_w*args.in_h*args.in_c;
+//     float *out = network_predict_data_to_float(net, *args.d);
+//     memcpy(pred_buffer[buff_index%3], out, net->outputs*args.n*sizeof(float));
+    
+//     return 0;
+// }
+
 void *predict_in_thread(void *ptr)
 {
-    load_args_espcn args = *(load_args_espcn *)ptr;
-    data d = *args.d;
-    // should be fixed
-    d.X.cols = args.in_w*args.in_h*args.in_c;
-    float *out = network_predict_data_to_float(net, *args.d);
-    memcpy(pred_buffer[buff_index%3], out, net->outputs*args.n*sizeof(float));
-    
-    return 0;
+    memcpy(pred_buffer[(buff_index+1)%3], network_predict(net, network_input_buffer[(buff_index+1)%3]), net->batch*net->outputs*sizeof(float));
 }
+
 
 void *merge_in_thread(void *ptr)
 {
     load_args_espcn args = *(load_args_espcn *)ptr;
-    free_image(out_im_buffer[(buff_index+1)%3]);
+    free_image(out_im_buffer[(buff_index+3)%3]);
     ///////////////////temp////////////////////////////////////////////////// pred_buffer ----> network_input_buffer
-    out_im_buffer[(buff_index+2)%3] = float2im(args, network_input_buffer[(buff_index+2)%3]);    
+    out_im_buffer[(buff_index+3)%3] = float2im(args, pred_buffer[(buff_index+3)%3]);    
     return 0;
 }
 
@@ -322,7 +329,7 @@ void *data_prep_in_thread(void *ptr)
             h_start = h_start - h_extra_offset;
         }
 
-        load_partial_data_demo(input_im_buffer[(buff_index+1)%3].data, i, h_start, w_start, h_len, w_len, out_c, out_h, out_w, network_input_buffer[(buff_index+1)%3]);
+        load_partial_data_demo(input_im_buffer[(buff_index+2)%3].data, i, h_start, w_start, h_len, w_len, out_c, out_h, out_w, network_input_buffer[(buff_index+2)%3]);
         
     }
 
@@ -331,7 +338,7 @@ void *data_prep_in_thread(void *ptr)
 void *load_input_im_demo(void *ptr)
 {
     // free_image(input_im_buffer[buff_index]);
-    input_im_buffer[buff_index] = load_image_color("data/dog.jpg", 0, 0);
+    input_im_buffer[buff_index%3] = load_image_color("data/scream.jpg", 0, 0);
 
 }
 
@@ -365,10 +372,10 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     }
     // srand(time(0));
     net = nets[0];
-    
+
+
     load_args_espcn args = {0};
     data buffer;
-    printf("test data!!!!!\n");
     image orig = load_image_color(filename, 0, 0);
     printf("%d, %d\n", orig.h, orig.w);
     args.in_c = 3;
@@ -384,7 +391,7 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     args.h_extra_offset = (args.in_h * args.num_rows - args.out_h) % (args.num_rows - 1);
     args.w_extra_offset = (args.in_w * args.num_cols - args.out_w) % (args.num_cols - 1);
 
-    args.espcn_scale = 1;
+    args.espcn_scale = 3;
 
     args.in_w_pred = args.in_w * args.espcn_scale;
     args.in_h_pred = args.in_h * args.espcn_scale;
@@ -448,15 +455,15 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     for(int t=0; t<1000; t++){
         *ptr = args;
         // memcpy(pred_buffer[t%3], network_predict_data_to_float(net, d), net->outputs*args.n*sizeof(float));
-        // if(pthread_create(&predict_thread, 0, predict_in_thread, ptr)) error("Thread creation failed");
         if(pthread_create(&input_thread, 0, load_input_im_demo, ptr)) error("Thread creation failed");
         if(pthread_create(&data_pred_thread, 0, data_prep_in_thread, ptr)) error("Thread creation failed");
+        if(pthread_create(&predict_thread, 0, predict_in_thread, ptr)) error("Thread creation failed");
         if(pthread_create(&merge_thread, 0, merge_in_thread, ptr)) error("Thread creation failed");
 
 
-        // pthread_join(predict_thread,0);
         // pthread_join(merge_thread,0);
         pthread_join(input_thread,0);
+        pthread_join(predict_thread,0);
         pthread_join(data_pred_thread,0);
         pthread_join(merge_thread,0);
 
