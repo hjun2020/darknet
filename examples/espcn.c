@@ -181,70 +181,7 @@ static void print_cocos(FILE *fp, char *image_path, detection *dets, int num_box
     }
 }
 
-// images load_partial_enhenced_images_stb(char *filename, network *net, int channels, int out_w, int out_h, int in_w, int in_h)
-// {
-//     images images;
-//     int w_remainder = in_w % out_w;
-//     int h_remainder = in_h % out_h; 
-//     int row;
-//     int col;
-//     if (w_remainder != 0){
-//         col = in_w / out_w + 1;
-//     } else {
-//         col = in_w / out_w;
-//     }
-//     if (h_remainder != 0){
-//         row = in_h / out_h + 1;
-//     } else {
-//         row = in_h / out_h;
-//     }
-//     col = in_w / out_w + 2;
-//     row = in_h / out_h + 2;
-
-//     int row_offset = (row * out_h - in_h) / (row-1);
-//     int col_offset = (col * out_w - in_w) / (col-1);
-
-//     int row_remainder = (row * out_h - in_h) % (row-1);
-//     int col_remainder = (col * out_w - in_w) % (col-1);
-
-
-
-//     images.data = calloc(row * col, sizeof(image));
-//     images.row = row;
-//     images.col = col;
-    
-//     int w_len = out_w;
-//     int h_len = out_h;
-//     images.w = 3*w_len;
-//     images.h = 3*h_len;
-
-//     for (int i=0; i<row; i++){
-//         for (int j=0; j<col; j++) {
-//             int r_offset = j*row_offset;
-//             int c_offset = i*col_offset;
-//             if(i == row-1){
-//                 c_offset += col_remainder;
-//             }
-//             if(j == col-1){
-//                 r_offset += row_remainder;
-//             }
-//             // images.data[i*col+j].h = out_h*3;
-//             // images.data[i*col+j].w = out_w*3;
-//             // images.data[i*col+j].data = network_predict(net, load_partial_image_stb(filename, 3, j*w_len-r_offset, w_len, i*h_len-c_offset, h_len).data);
-
-//             image partial_img = load_partial_image_stb(filename, 3, j*w_len-r_offset, w_len, i*h_len-c_offset, h_len);
-//             image temp_image = make_image(3*out_w, 3*out_h, 3);
-//             temp_image.data = network_predict(net, partial_img.data);
-//             images.data[i*col+j] = copy_image(temp_image);
-//             // printf("row: %d, col: %d, w_range: %d %d, h_range: %d %d\n", i, j, j*w_len-r_offset, w_len, i*h_len-c_offset, h_len);
-//         }
-//     }
-//     return images;
-// }
-
 void temp_test(char *cfgfile){
-    // network *net = parse_network_cfg(cfgfile);
-    
 
 }
 
@@ -452,7 +389,7 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
 
     struct load_args_espcn *ptr = calloc(1, sizeof(struct load_args_espcn));
     double time=what_time_is_it_now();
-    for(int t=0; t<1000; t++){
+    for(int t=0; t<30000; t++){
         *ptr = args;
         // memcpy(pred_buffer[t%3], network_predict_data_to_float(net, d), net->outputs*args.n*sizeof(float));
         if(pthread_create(&input_thread, 0, load_input_im_demo, ptr)) error("Thread creation failed");
@@ -461,16 +398,16 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
         if(pthread_create(&merge_thread, 0, merge_in_thread, ptr)) error("Thread creation failed");
 
 
-        // pthread_join(merge_thread,0);
         pthread_join(input_thread,0);
         pthread_join(predict_thread,0);
         pthread_join(data_pred_thread,0);
         pthread_join(merge_thread,0);
 
         buff_index = (buff_index+1)%3;
+        if(t%1000 == 0) printf("count: %d\n", t);
     }
     printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
-
+  
 
     // image im = float2im(args, pred_buffer[2]);
     save_image(out_im_buffer[2], "data_test/tt11");
@@ -519,7 +456,7 @@ void run_enhancer(int argc, char **argv)
 
     int clear = find_arg(argc, argv, "-clear");
     int fullscreen = find_arg(argc, argv, "-fullscreen");
-    int width = find_int_arg(argc, argv, "-w", 0);
+    int width = find_int_arg(argc, argv, "-w", 0);  
     int height = find_int_arg(argc, argv, "-h", 0);
     int fps = find_int_arg(argc, argv, "-fps", 0);
     //int class = find_int_arg(argc, argv, "-class", 0);
