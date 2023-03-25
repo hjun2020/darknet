@@ -1293,8 +1293,7 @@ float *load_partial_data(float *im, int h_start, int w_start, int h_len, int w_l
 {
     int i,j,k;
     float *partial_im;
-    partial_im = calloc(c*h_len*w_len, sizeof(float*));
-    // printf("%d, %d\n", h_start, w_start);
+    partial_im = calloc(c*h_len*w_len, sizeof(float));
     for(k = 0; k < c; ++k){
         for(j = h_start; j < h_start + h_len; ++j){
             for(i = w_start; i < w_start + w_len; ++i){
