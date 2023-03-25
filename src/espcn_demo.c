@@ -24,6 +24,8 @@ static network *net;
 static image out_im_buffer [3];
 static image input_im_buffer [3];
 static float **network_input_buffer [3];
+static void * cap;
+static int demo_done = 0;
 
 
 // void *predict_in_thread(void *ptr)
@@ -108,7 +110,16 @@ void *data_prep_in_thread(void *ptr)
 void *load_input_im_demo(void *ptr)
 {
     // free_image(input_im_buffer[buff_index]);
-    input_im_buffer[buff_index%3] = load_image_color("data/scream.jpg", 0, 0);
+    // input_im_buffer[buff_index%3] = load_image_color("data/scream.jpg", 0, 0);
+    // input_im_buffer[buff_index%3] = get_image_from_stream(cap);
+
+    free_image(input_im_buffer[buff_index%3]);
+    input_im_buffer[buff_index%3]= get_image_from_stream(cap);
+    if(input_im_buffer[buff_index%3].data == 0) {
+        demo_done = 1;
+        return 0;
+    }
+    return 0;
 
 }
 
@@ -143,10 +154,15 @@ void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     // srand(time(0));
     net = nets[0];
 
+    if(filename){
+    printf("video file: %s\n", filename);
+    cap = open_video_stream(filename, 0, 0, 0, 0);
+    }
 
     load_args_espcn args = {0};
     data buffer;
-    image orig = load_image_color(filename, 0, 0);
+    // image orig = load_image_color("data/scream.jpg", 0, 0);
+    image orig = get_image_from_stream(cap);
     printf("%d, %d\n", orig.h, orig.w);
     args.in_c = 3;
     args.in_h = net->h;
@@ -185,6 +201,9 @@ void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     net->batch = args.n;
     net->subdivisions = 1;
 
+    printf("%d!!!!!!!!!!!!!!! \n", args.n);
+
+
 
 
     pred_buffer[0] = calloc(net->outputs*args.n, sizeof(float));
@@ -195,9 +214,12 @@ void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     network_input_buffer[1] = calloc(net->inputs*args.n, sizeof(float));
     network_input_buffer[2] = calloc(net->inputs*args.n, sizeof(float));
 
-    input_im_buffer[0] = load_image_color(filename, 0, 0);
-    input_im_buffer[1] = load_image_color(filename, 0, 0);
-    input_im_buffer[2] = load_image_color(filename, 0, 0);
+    // input_im_buffer[0] = load_image_color(filename, 0, 0);
+    // input_im_buffer[1] = load_image_color(filename, 0, 0);
+    // input_im_buffer[2] = load_image_color(filename, 0, 0);
+    input_im_buffer[0] = get_image_from_stream(cap);
+    input_im_buffer[1] = get_image_from_stream(cap);
+    input_im_buffer[2] = get_image_from_stream(cap);
 
 
     data data_buffer [3];    
@@ -211,9 +233,9 @@ void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
     // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset_pred, args.w_offset_pred, args.h_extra_offset_pred, args.w_extra_offset_pred);
 
-    pthread_t load_thread = load_data_espcn(args);
+    // pthread_t load_thread = load_data_espcn(args);
 
-    pthread_join(load_thread, 0);
+    // pthread_join(load_thread, 0);
 
     data d = *args.d;
     // should be fixed
