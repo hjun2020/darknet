@@ -1822,7 +1822,7 @@ image float2im(load_args_espcn args, float *pred)
     int out_h = args.out_h_pred;
     int out_w = args.out_w_pred;
     int out_c = args.out_c_pred;
-    int n = d.X.rows;
+    int n = args.n;
     int num_cols = args.num_cols;
     int num_rows = args.num_rows;
     int in_w = args.in_w_pred;
@@ -1838,6 +1838,7 @@ image float2im(load_args_espcn args, float *pred)
     // float *buffer = pred;
     for(i=0; i<n; i++){
         // buffer = pred.vals[i];
+        // printf("%d\n", i);
         int col = i % num_cols;
         int row = i / num_cols;
         int w_start = (in_w - w_offset) * col;

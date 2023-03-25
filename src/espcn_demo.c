@@ -9,6 +9,8 @@
 #include "demo.h"
 #include <sys/time.h>
 
+
+
 #define DEMO 1
 
 #ifdef OPENCV
@@ -113,7 +115,7 @@ void *load_input_im_demo(void *ptr)
     // input_im_buffer[buff_index%3] = load_image_color("data/scream.jpg", 0, 0);
     // input_im_buffer[buff_index%3] = get_image_from_stream(cap);
 
-    free_image(input_im_buffer[buff_index%3]);
+    // free_image(input_im_buffer[buff_index%3]);
     input_im_buffer[buff_index%3]= get_image_from_stream(cap);
     if(input_im_buffer[buff_index%3].data == 0) {
         demo_done = 1;
@@ -124,7 +126,26 @@ void *load_input_im_demo(void *ptr)
 }
 
 
-
+void *display_in_thread_espcn_demo(void *ptr)
+{
+    int c = show_image(out_im_buffer[(buff_index + 1)%3], "Demo", 1);
+    // if (c != -1) c = c%256;
+    // if (c == 27) {
+    //     demo_done = 1;
+    //     return 0;
+    // } else if (c == 82) {
+    //     demo_thresh += .02;
+    // } else if (c == 84) {
+    //     demo_thresh -= .02;
+    //     if(demo_thresh <= .02) demo_thresh = .02;
+    // } else if (c == 83) {
+    //     demo_hier += .02;
+    // } else if (c == 81) {
+    //     demo_hier -= .02;
+    //     if(demo_hier <= .0) demo_hier = .0;
+    // }
+    return 0;
+}
 
 
 
@@ -217,9 +238,10 @@ void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     // input_im_buffer[0] = load_image_color(filename, 0, 0);
     // input_im_buffer[1] = load_image_color(filename, 0, 0);
     // input_im_buffer[2] = load_image_color(filename, 0, 0);
-    input_im_buffer[0] = get_image_from_stream(cap);
-    input_im_buffer[1] = get_image_from_stream(cap);
-    input_im_buffer[2] = get_image_from_stream(cap);
+    input_im_buffer[0] = copy_image(orig);
+    input_im_buffer[1] = copy_image(orig);
+    input_im_buffer[2] = copy_image(orig);
+
 
 
     data data_buffer [3];    
@@ -244,8 +266,9 @@ void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
 
     struct load_args_espcn *ptr = calloc(1, sizeof(struct load_args_espcn));
     double time=what_time_is_it_now();
-    for(int t=0; t<100; t++){
-        *ptr = args;
+    *ptr = args;
+    int count = 0;
+    while(!demo_done){
         // memcpy(pred_buffer[t%3], network_predict_data_to_float(net, d), net->outputs*args.n*sizeof(float));
         if(pthread_create(&input_thread, 0, load_input_im_demo, ptr)) error("Thread creation failed");
         if(pthread_create(&data_pred_thread, 0, data_prep_in_thread, ptr)) error("Thread creation failed");
@@ -259,9 +282,12 @@ void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
         pthread_join(merge_thread,0);
 
         buff_index = (buff_index+1)%3;
-        if(t%1000 == 0) printf("count: %d\n", t);
+        // if(t%1000 == 0) printf("count: %d\n", t);
+        // if(count > 4) imshow("video", out_im_buffer[buff_index]);
+        count++;
     }
     printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
+    printf("%d\n", count);
   
 
     // image im = float2im(args, pred_buffer[2]);
