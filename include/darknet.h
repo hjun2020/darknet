@@ -745,6 +745,7 @@ float *load_partial_data(float *im, int h_start, int w_start, int h_len, int w_l
 image data2im(load_args_espcn args, matrix pred);
 image float2im(load_args_espcn args, float *pred);
 float *network_predict_data_to_float(network *net, data test);
+void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *filename, int *gpus, int ngpus, int clear);
 
 //image merge_partial_images(images ims, int channel, int w, int h);
 

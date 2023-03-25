@@ -181,241 +181,241 @@ static void print_cocos(FILE *fp, char *image_path, detection *dets, int num_box
     }
 }
 
-void temp_test(char *cfgfile){
+// void temp_test(char *cfgfile){
 
-}
+// }
 
-static float **pred_buffer [3];
-static int buff_index = 0;
-static network *net;
-static image out_im_buffer [3];
-static image input_im_buffer [3];
-static float **network_input_buffer [3];
+// static float **pred_buffer [3];
+// static int buff_index = 0;
+// static network *net;
+// static image out_im_buffer [3];
+// static image input_im_buffer [3];
+// static float **network_input_buffer [3];
 
+
+// // void *predict_in_thread(void *ptr)
+// // {
+// //     load_args_espcn args = *(load_args_espcn *)ptr;
+// //     data d = *args.d;
+// //     // should be fixed
+// //     d.X.cols = args.in_w*args.in_h*args.in_c;
+// //     float *out = network_predict_data_to_float(net, *args.d);
+// //     memcpy(pred_buffer[buff_index%3], out, net->outputs*args.n*sizeof(float));
+    
+// //     return 0;
+// // }
 
 // void *predict_in_thread(void *ptr)
 // {
+//     memcpy(pred_buffer[(buff_index+1)%3], network_predict(net, network_input_buffer[(buff_index+1)%3]), net->batch*net->outputs*sizeof(float));
+// }
+
+
+// void *merge_in_thread(void *ptr)
+// {
 //     load_args_espcn args = *(load_args_espcn *)ptr;
-//     data d = *args.d;
-//     // should be fixed
-//     d.X.cols = args.in_w*args.in_h*args.in_c;
-//     float *out = network_predict_data_to_float(net, *args.d);
-//     memcpy(pred_buffer[buff_index%3], out, net->outputs*args.n*sizeof(float));
-    
+//     free_image(out_im_buffer[(buff_index+3)%3]);
+//     ///////////////////temp////////////////////////////////////////////////// pred_buffer ----> network_input_buffer
+//     out_im_buffer[(buff_index+3)%3] = float2im(args, pred_buffer[(buff_index+3)%3]);    
 //     return 0;
 // }
 
-void *predict_in_thread(void *ptr)
-{
-    memcpy(pred_buffer[(buff_index+1)%3], network_predict(net, network_input_buffer[(buff_index+1)%3]), net->batch*net->outputs*sizeof(float));
-}
+// void load_partial_data_demo(float *im, int n, int h_start, int w_start, int h_len, int w_len, int c, int h, int w, float *dst_buff)
+// {
+//     int i,j,k;
+//     int start_offset = n*h_len*w_len*3;
+//     for(k = 0; k < c; ++k){
+//         for(j = h_start; j < h_start + h_len; ++j){
+//             for(i = w_start; i < w_start + w_len; ++i){
+//                 int dst_index = (i-w_start) + w_len*(j-h_start) + w_len*h_len*k;
+//                 int src_index = i + w*j + k*h*w;
+//                 dst_buff[start_offset+dst_index] = (float)im[src_index];
+//             }
+//         }
+//     }
 
+//     return 0;
+// }
 
-void *merge_in_thread(void *ptr)
-{
-    load_args_espcn args = *(load_args_espcn *)ptr;
-    free_image(out_im_buffer[(buff_index+3)%3]);
-    ///////////////////temp////////////////////////////////////////////////// pred_buffer ----> network_input_buffer
-    out_im_buffer[(buff_index+3)%3] = float2im(args, pred_buffer[(buff_index+3)%3]);    
-    return 0;
-}
+// void *data_prep_in_thread(void *ptr)
+// {
+//     load_args_espcn args = *(load_args_espcn *)ptr;
 
-void load_partial_data_demo(float *im, int n, int h_start, int w_start, int h_len, int w_len, int c, int h, int w, float *dst_buff)
-{
-    int i,j,k;
-    int start_offset = n*h_len*w_len*3;
-    for(k = 0; k < c; ++k){
-        for(j = h_start; j < h_start + h_len; ++j){
-            for(i = w_start; i < w_start + w_len; ++i){
-                int dst_index = (i-w_start) + w_len*(j-h_start) + w_len*h_len*k;
-                int src_index = i + w*j + k*h*w;
-                dst_buff[start_offset+dst_index] = (float)im[src_index];
-            }
-        }
-    }
+//     int num_cols = args.num_cols;
+//     int num_rows = args.num_rows;
+//     int w_len = args.w_len;
+//     int h_len = args.h_len;
+//     int w_offset = args.w_offset;
+//     int h_offset = args.h_offset;
+//     int w_extra_offset = args.w_extra_offset;
+//     int h_extra_offset = args.h_extra_offset;
+//     int n = args.n;
+//     int out_c = args.out_c;
+//     int out_h = args.out_h;
+//     int out_w = args.out_w;
+//     int i;
+//     for(i = 0; i < n; ++i){
+//         int start_col = i % num_cols;
+//         int start_row = i / num_cols;
+//         int w_start = w_len * start_col - (w_offset * start_col);
+//         int h_start = h_len * start_row - (h_offset * start_row);
+//         if(start_col == num_cols - 1){
+//             w_start = w_start - w_extra_offset;
+//         }
+//         if(start_row == num_rows -1){
+//             h_start = h_start - h_extra_offset;
+//         }
 
-    return 0;
-}
-
-void *data_prep_in_thread(void *ptr)
-{
-    load_args_espcn args = *(load_args_espcn *)ptr;
-
-    int num_cols = args.num_cols;
-    int num_rows = args.num_rows;
-    int w_len = args.w_len;
-    int h_len = args.h_len;
-    int w_offset = args.w_offset;
-    int h_offset = args.h_offset;
-    int w_extra_offset = args.w_extra_offset;
-    int h_extra_offset = args.h_extra_offset;
-    int n = args.n;
-    int out_c = args.out_c;
-    int out_h = args.out_h;
-    int out_w = args.out_w;
-    int i;
-    for(i = 0; i < n; ++i){
-        int start_col = i % num_cols;
-        int start_row = i / num_cols;
-        int w_start = w_len * start_col - (w_offset * start_col);
-        int h_start = h_len * start_row - (h_offset * start_row);
-        if(start_col == num_cols - 1){
-            w_start = w_start - w_extra_offset;
-        }
-        if(start_row == num_rows -1){
-            h_start = h_start - h_extra_offset;
-        }
-
-        load_partial_data_demo(input_im_buffer[(buff_index+2)%3].data, i, h_start, w_start, h_len, w_len, out_c, out_h, out_w, network_input_buffer[(buff_index+2)%3]);
+//         load_partial_data_demo(input_im_buffer[(buff_index+2)%3].data, i, h_start, w_start, h_len, w_len, out_c, out_h, out_w, network_input_buffer[(buff_index+2)%3]);
         
-    }
+//     }
 
-}
+// }
 
-void *load_input_im_demo(void *ptr)
-{
-    // free_image(input_im_buffer[buff_index]);
-    input_im_buffer[buff_index%3] = load_image_color("data/scream.jpg", 0, 0);
+// void *load_input_im_demo(void *ptr)
+// {
+//     // free_image(input_im_buffer[buff_index]);
+//     input_im_buffer[buff_index%3] = load_image_color("data/scream.jpg", 0, 0);
 
-}
-
-
+// }
 
 
 
 
 
-void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, int *gpus, int ngpus, int clear)
-{
-    list *options = read_data_cfg(datacfg);
-    char *train_images = option_find_str(options, "train", "data/train.list");
-    char *backup_directory = option_find_str(options, "backup", "/backup/");
 
 
-    // srand(time(0));
-    char *base = basecfg(cfgfile);
-    float avg_loss = -1;
-    network **nets = calloc(ngpus, sizeof(network));
-
-    // srand(time(0));
-    // int seed = rand();
-    int i;
-    for(i = 0; i < ngpus; ++i){
-#ifdef GPU
-        cuda_set_device(gpus[i]);
-#endif
-        nets[i] = load_network(cfgfile, weightfile, clear);
-        nets[i]->learning_rate *= ngpus;
-    }
-    // srand(time(0));
-    net = nets[0];
+// void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, int *gpus, int ngpus, int clear)
+// {
+//     list *options = read_data_cfg(datacfg);
+//     char *train_images = option_find_str(options, "train", "data/train.list");
+//     char *backup_directory = option_find_str(options, "backup", "/backup/");
 
 
-    load_args_espcn args = {0};
-    data buffer;
-    image orig = load_image_color(filename, 0, 0);
-    printf("%d, %d\n", orig.h, orig.w);
-    args.in_c = 3;
-    args.in_h = net->h;
-    args.in_w = net->w;
-    args.out_c = 3;
-    args.out_h = orig.h;
-    args.out_w = orig.w;
-    args.num_rows = args.out_h / args.in_h + 1;
-    args.num_cols = args.out_w / args.in_h + 1;
-    args.h_offset = (args.in_h * args.num_rows - args.out_h) / (args.num_rows - 1);
-    args.w_offset = (args.in_w * args.num_cols - args.out_w) / (args.num_cols - 1);
-    args.h_extra_offset = (args.in_h * args.num_rows - args.out_h) % (args.num_rows - 1);
-    args.w_extra_offset = (args.in_w * args.num_cols - args.out_w) % (args.num_cols - 1);
+//     // srand(time(0));
+//     char *base = basecfg(cfgfile);
+//     float avg_loss = -1;
+//     network **nets = calloc(ngpus, sizeof(network));
 
-    args.espcn_scale = 3;
-
-    args.in_w_pred = args.in_w * args.espcn_scale;
-    args.in_h_pred = args.in_h * args.espcn_scale;
-    args.in_c_pred = args.in_c;
-    args.out_w_pred = args.out_w * args.espcn_scale;
-    args.out_h_pred = args.out_h * args.espcn_scale;
-    args.out_c_pred = args.out_c;
-    args.w_offset_pred = args.w_offset * args.espcn_scale;
-    args.h_offset_pred = args.h_offset * args.espcn_scale;
-    args.w_extra_offset_pred = args.w_extra_offset * args.espcn_scale;
-    args.h_extra_offset_pred = args.h_extra_offset * args.espcn_scale; 
-
-    args.h_len = 104;
-    args.w_len = 104;
-    args.im_data = orig.data;
-    args.threads = args.num_cols * args.num_rows;
-    args.n = args.num_cols * args.num_rows;
-    args.d = &buffer;
-    args.type = ESPCN_DEMO_DATA;
-
-    net->batch = args.n;
-    net->subdivisions = 1;
+//     // srand(time(0));
+//     // int seed = rand();
+//     int i;
+//     for(i = 0; i < ngpus; ++i){
+// #ifdef GPU
+//         cuda_set_device(gpus[i]);
+// #endif
+//         nets[i] = load_network(cfgfile, weightfile, clear);
+//         nets[i]->learning_rate *= ngpus;
+//     }
+//     // srand(time(0));
+//     net = nets[0];
 
 
+//     load_args_espcn args = {0};
+//     data buffer;
+//     image orig = load_image_color(filename, 0, 0);
+//     printf("%d, %d\n", orig.h, orig.w);
+//     args.in_c = 3;
+//     args.in_h = net->h;
+//     args.in_w = net->w;
+//     args.out_c = 3;
+//     args.out_h = orig.h;
+//     args.out_w = orig.w;
+//     args.num_rows = args.out_h / args.in_h + 1;
+//     args.num_cols = args.out_w / args.in_h + 1;
+//     args.h_offset = (args.in_h * args.num_rows - args.out_h) / (args.num_rows - 1);
+//     args.w_offset = (args.in_w * args.num_cols - args.out_w) / (args.num_cols - 1);
+//     args.h_extra_offset = (args.in_h * args.num_rows - args.out_h) % (args.num_rows - 1);
+//     args.w_extra_offset = (args.in_w * args.num_cols - args.out_w) % (args.num_cols - 1);
 
-    pred_buffer[0] = calloc(net->outputs*args.n, sizeof(float));
-    pred_buffer[1] = calloc(net->outputs*args.n, sizeof(float));
-    pred_buffer[2] = calloc(net->outputs*args.n, sizeof(float));
+//     args.espcn_scale = 3;
 
-    network_input_buffer[0] = calloc(net->inputs*args.n, sizeof(float));
-    network_input_buffer[1] = calloc(net->inputs*args.n, sizeof(float));
-    network_input_buffer[2] = calloc(net->inputs*args.n, sizeof(float));
+//     args.in_w_pred = args.in_w * args.espcn_scale;
+//     args.in_h_pred = args.in_h * args.espcn_scale;
+//     args.in_c_pred = args.in_c;
+//     args.out_w_pred = args.out_w * args.espcn_scale;
+//     args.out_h_pred = args.out_h * args.espcn_scale;
+//     args.out_c_pred = args.out_c;
+//     args.w_offset_pred = args.w_offset * args.espcn_scale;
+//     args.h_offset_pred = args.h_offset * args.espcn_scale;
+//     args.w_extra_offset_pred = args.w_extra_offset * args.espcn_scale;
+//     args.h_extra_offset_pred = args.h_extra_offset * args.espcn_scale; 
 
-    input_im_buffer[0] = load_image_color(filename, 0, 0);
-    input_im_buffer[1] = load_image_color(filename, 0, 0);
-    input_im_buffer[2] = load_image_color(filename, 0, 0);
+//     args.h_len = 104;
+//     args.w_len = 104;
+//     args.im_data = orig.data;
+//     args.threads = args.num_cols * args.num_rows;
+//     args.n = args.num_cols * args.num_rows;
+//     args.d = &buffer;
+//     args.type = ESPCN_DEMO_DATA;
 
-
-    data data_buffer [3];    
-
-    pthread_t predict_thread;
-    pthread_t merge_thread;
-    pthread_t input_thread;
-    pthread_t data_pred_thread;
-
-
-    // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
-    // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset_pred, args.w_offset_pred, args.h_extra_offset_pred, args.w_extra_offset_pred);
-
-    pthread_t load_thread = load_data_espcn(args);
-
-    pthread_join(load_thread, 0);
-
-    data d = *args.d;
-    // should be fixed
-    d.X.cols = args.in_w*args.in_h*args.in_c;
-    //////////////
-
-    struct load_args_espcn *ptr = calloc(1, sizeof(struct load_args_espcn));
-    double time=what_time_is_it_now();
-    for(int t=0; t<30000; t++){
-        *ptr = args;
-        // memcpy(pred_buffer[t%3], network_predict_data_to_float(net, d), net->outputs*args.n*sizeof(float));
-        if(pthread_create(&input_thread, 0, load_input_im_demo, ptr)) error("Thread creation failed");
-        if(pthread_create(&data_pred_thread, 0, data_prep_in_thread, ptr)) error("Thread creation failed");
-        if(pthread_create(&predict_thread, 0, predict_in_thread, ptr)) error("Thread creation failed");
-        if(pthread_create(&merge_thread, 0, merge_in_thread, ptr)) error("Thread creation failed");
+//     net->batch = args.n;
+//     net->subdivisions = 1;
 
 
-        pthread_join(input_thread,0);
-        pthread_join(predict_thread,0);
-        pthread_join(data_pred_thread,0);
-        pthread_join(merge_thread,0);
 
-        buff_index = (buff_index+1)%3;
-        if(t%1000 == 0) printf("count: %d\n", t);
-    }
-    printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
+//     pred_buffer[0] = calloc(net->outputs*args.n, sizeof(float));
+//     pred_buffer[1] = calloc(net->outputs*args.n, sizeof(float));
+//     pred_buffer[2] = calloc(net->outputs*args.n, sizeof(float));
+
+//     network_input_buffer[0] = calloc(net->inputs*args.n, sizeof(float));
+//     network_input_buffer[1] = calloc(net->inputs*args.n, sizeof(float));
+//     network_input_buffer[2] = calloc(net->inputs*args.n, sizeof(float));
+
+//     input_im_buffer[0] = load_image_color(filename, 0, 0);
+//     input_im_buffer[1] = load_image_color(filename, 0, 0);
+//     input_im_buffer[2] = load_image_color(filename, 0, 0);
+
+
+//     data data_buffer [3];    
+
+//     pthread_t predict_thread;
+//     pthread_t merge_thread;
+//     pthread_t input_thread;
+//     pthread_t data_pred_thread;
+
+
+//     // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
+//     // printf("%d, %d, %d, %d, %d, %d\n\n", args.num_rows, args.num_cols, args.h_offset_pred, args.w_offset_pred, args.h_extra_offset_pred, args.w_extra_offset_pred);
+
+//     pthread_t load_thread = load_data_espcn(args);
+
+//     pthread_join(load_thread, 0);
+
+//     data d = *args.d;
+//     // should be fixed
+//     d.X.cols = args.in_w*args.in_h*args.in_c;
+//     //////////////
+
+//     struct load_args_espcn *ptr = calloc(1, sizeof(struct load_args_espcn));
+//     double time=what_time_is_it_now();
+//     for(int t=0; t<100; t++){
+//         *ptr = args;
+//         // memcpy(pred_buffer[t%3], network_predict_data_to_float(net, d), net->outputs*args.n*sizeof(float));
+//         if(pthread_create(&input_thread, 0, load_input_im_demo, ptr)) error("Thread creation failed");
+//         if(pthread_create(&data_pred_thread, 0, data_prep_in_thread, ptr)) error("Thread creation failed");
+//         if(pthread_create(&predict_thread, 0, predict_in_thread, ptr)) error("Thread creation failed");
+//         if(pthread_create(&merge_thread, 0, merge_in_thread, ptr)) error("Thread creation failed");
+
+
+//         pthread_join(input_thread,0);
+//         pthread_join(predict_thread,0);
+//         pthread_join(data_pred_thread,0);
+//         pthread_join(merge_thread,0);
+
+//         buff_index = (buff_index+1)%3;
+//         if(t%1000 == 0) printf("count: %d\n", t);
+//     }
+//     printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
   
 
-    // image im = float2im(args, pred_buffer[2]);
-    save_image(out_im_buffer[2], "data_test/tt11");
+//     // image im = float2im(args, pred_buffer[2]);
+//     save_image(out_im_buffer[1], "data_test/tt11");
 
-    // free_image(im);
+//     // free_image(im);
 
-    return;
-}
+//     return;
+// }
   
 
 void run_enhancer(int argc, char **argv)
@@ -467,7 +467,8 @@ void run_enhancer(int argc, char **argv)
     char *filename = (argc > 6) ? argv[6]: 0;
     // if(0==strcmp(argv[2], "test")) test_enhencer(datacfg, cfg, weights, filename, thresh, hier_thresh, outfile, fullscreen);
     if(0==strcmp(argv[2], "train")) train_enhencer(datacfg, cfg, weights, gpus, ngpus, clear);
-    if(0==strcmp(argv[2], "data_test")) data_test(datacfg, cfg, weights, filename, gpus, ngpus, clear);
+    // else if(0==strcmp(argv[2], "data_test")) data_test(datacfg, cfg, weights, filename, gpus, ngpus, clear);
+    else if(0==strcmp(argv[2], "espcn_video_demo")) espcn_video_demo(datacfg, cfg, weights, filename, gpus, ngpus, clear);
     // else if(0==strcmp(argv[2], "valid")) validate_enhencer(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "valid2")) validate_enhencer_flip(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "recall")) validate_enhencer_recall(cfg, weights);
