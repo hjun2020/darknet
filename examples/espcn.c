@@ -271,7 +271,8 @@ void *merge_in_thread(void *ptr)
 {
     load_args_espcn args = *(load_args_espcn *)ptr;
     free_image(out_im_buffer[(buff_index+1)%3]);
-    out_im_buffer[(buff_index+1)%3] = float2im(args, pred_buffer[(buff_index+1)%3]);    
+    ///////////////////temp////////////////////////////////////////////////// pred_buffer ----> network_input_buffer
+    out_im_buffer[(buff_index+2)%3] = float2im(args, network_input_buffer[(buff_index+2)%3]);    
     return 0;
 }
 
@@ -279,13 +280,11 @@ void load_partial_data_demo(float *im, int n, int h_start, int w_start, int h_le
 {
     int i,j,k;
     int start_offset = n*h_len*w_len*3;
-    dst_buff[0];
     for(k = 0; k < c; ++k){
         for(j = h_start; j < h_start + h_len; ++j){
             for(i = w_start; i < w_start + w_len; ++i){
                 int dst_index = (i-w_start) + w_len*(j-h_start) + w_len*h_len*k;
                 int src_index = i + w*j + k*h*w;
-                printf("%d, %d, %d\n", dst_index, src_index, start_offset);
                 dst_buff[start_offset+dst_index] = (float)im[src_index];
             }
         }
@@ -323,7 +322,7 @@ void *data_prep_in_thread(void *ptr)
             h_start = h_start - h_extra_offset;
         }
 
-        load_partial_data_demo(input_im_buffer[(buff_index+1)&3].data, i, h_start, w_start, h_len, w_len, out_c, out_h, out_w, network_input_buffer[(buff_index+1)%3]);
+        load_partial_data_demo(input_im_buffer[(buff_index+1)%3].data, i, h_start, w_start, h_len, w_len, out_c, out_h, out_w, network_input_buffer[(buff_index+1)%3]);
         
     }
 
@@ -385,7 +384,7 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     args.h_extra_offset = (args.in_h * args.num_rows - args.out_h) % (args.num_rows - 1);
     args.w_extra_offset = (args.in_w * args.num_cols - args.out_w) % (args.num_cols - 1);
 
-    args.espcn_scale = 3;
+    args.espcn_scale = 1;
 
     args.in_w_pred = args.in_w * args.espcn_scale;
     args.in_h_pred = args.in_h * args.espcn_scale;
@@ -419,6 +418,11 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
     network_input_buffer[1] = calloc(net->inputs*args.n, sizeof(float));
     network_input_buffer[2] = calloc(net->inputs*args.n, sizeof(float));
 
+    input_im_buffer[0] = load_image_color(filename, 0, 0);
+    input_im_buffer[1] = load_image_color(filename, 0, 0);
+    input_im_buffer[2] = load_image_color(filename, 0, 0);
+
+
     data data_buffer [3];    
 
     pthread_t predict_thread;
@@ -445,15 +449,16 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
         *ptr = args;
         // memcpy(pred_buffer[t%3], network_predict_data_to_float(net, d), net->outputs*args.n*sizeof(float));
         // if(pthread_create(&predict_thread, 0, predict_in_thread, ptr)) error("Thread creation failed");
-        // if(pthread_create(&merge_thread, 0, merge_in_thread, ptr)) error("Thread creation failed");
         if(pthread_create(&input_thread, 0, load_input_im_demo, ptr)) error("Thread creation failed");
         if(pthread_create(&data_pred_thread, 0, data_prep_in_thread, ptr)) error("Thread creation failed");
+        if(pthread_create(&merge_thread, 0, merge_in_thread, ptr)) error("Thread creation failed");
 
 
         // pthread_join(predict_thread,0);
         // pthread_join(merge_thread,0);
         pthread_join(input_thread,0);
         pthread_join(data_pred_thread,0);
+        pthread_join(merge_thread,0);
 
         buff_index = (buff_index+1)%3;
     }
@@ -461,7 +466,7 @@ void data_test(char *datacfg, char *cfgfile, char *weightfile, char *filename, i
 
 
     // image im = float2im(args, pred_buffer[2]);
-    save_image(input_im_buffer[2], "data_test/tt11");
+    save_image(out_im_buffer[2], "data_test/tt11");
 
     // free_image(im);
 
