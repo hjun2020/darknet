@@ -128,7 +128,7 @@ void *load_input_im_demo(void *ptr)
 
 void *display_in_thread_espcn_demo(void *ptr)
 {
-    int c = show_image(out_im_buffer[(buff_index + 1)%3], "Demo", 1);
+    int c = show_image(resize_image(out_im_buffer[(buff_index + 1)%3], 1280, 730), "Demo", 1);
     // if (c != -1) c = c%256;
     // if (c == 27) {
     //     demo_done = 1;
@@ -275,11 +275,13 @@ void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
         if(pthread_create(&predict_thread, 0, predict_in_thread, ptr)) error("Thread creation failed");
         if(pthread_create(&merge_thread, 0, merge_in_thread, ptr)) error("Thread creation failed");
 
+        if(count > 4) display_in_thread_espcn_demo(0);
 
         pthread_join(input_thread,0);
         pthread_join(predict_thread,0);
         pthread_join(data_pred_thread,0);
         pthread_join(merge_thread,0);
+
 
         buff_index = (buff_index+1)%3;
         // if(t%1000 == 0) printf("count: %d\n", t);

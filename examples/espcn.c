@@ -15,13 +15,13 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     // printf("%s\n", train_images);
 
     
-    srand(time(0));
+    // srand(time(0));
     char *base = basecfg(cfgfile);
     float avg_loss = -1;
     network **nets = calloc(ngpus, sizeof(network));
 
-    srand(time(0));
-    int seed = rand();
+    // srand(time(0));
+    // int seed = rand();
     int i;
     for(i = 0; i < ngpus; ++i){
 #ifdef GPU
@@ -30,7 +30,7 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         nets[i] = load_network(cfgfile, weightfile, clear);
         nets[i]->learning_rate *= ngpus;
     }
-    srand(time(0));
+    // srand(time(0));
     network *net = nets[0];
 
     int imgs = net->batch * net->subdivisions * ngpus;
