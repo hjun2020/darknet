@@ -1147,7 +1147,7 @@ void *load_thread(void *ptr)
     } else if (a.type == TAG_DATA){
         *a.d = load_data_tag(a.paths, a.n, a.m, a.classes, a.min, a.max, a.size, a.angle, a.aspect, a.hue, a.saturation, a.exposure);
     } else if (a.type == ENHENCE_DATA){
-        *a.d = load_data_enhence(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure);
+        *a.d = load_data_enhence(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure, a.espcn_scale);
     } 
     free(ptr);
     return 0;
@@ -2018,7 +2018,7 @@ data load_data_espcn_batch(int n, float *im_data, int h_len, int w_len, int h, i
 
 }
 
-data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure)
+data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale)
 {
     char **random_paths = get_random_paths(paths, n, m);
     int i;
@@ -2029,46 +2029,45 @@ data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int 
     d.X.vals = calloc(d.X.rows, sizeof(float*));
     d.X.cols = h*w*3;
 
-    // d.y = make_matrix(n, 5*boxes);
-    d.y = make_matrix(n, w*h*27);
-    // d.y.rows = n;
-    // d.y.vals = calloc(d.y.rows, sizeof(float*));
-    // d.y.cols = h*w*3;
+    d.y = make_matrix(n, w*h*espcn_scale*espcn_scale);
+
+    int truth_w = w * espcn_scale;
+    int truth_h = h * espcn_scale;
 
 
     for(i = 0; i < n; ++i){
-        int w,h,c;
-        unsigned char *data = stbi_load(random_paths[i], &w, &h, &c, 3);
+        int im_w,im_h,im_c;
+        unsigned char *data = stbi_load(random_paths[i], &im_w, &im_h, &im_c, 3);
 
         if (!data) {
             fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", random_paths[i], stbi_failure_reason());
             exit(0);
         }
         int w_start, h_start;
-        if(w>312){
-            w_start = rand() % (w-312);
+        if(im_w > truth_w){
+            w_start = rand() % (im_w - truth_w);
         }
         else{
             w_start = 0;
         }
-        if(h>312){
-            h_start = rand() % (h-312);
+        if(h > truth_h){
+            h_start = rand() % (h-truth_h);
         }
         else{
             h_start = 0;
         }
 
-        int w_len = min(w, 312);
-        int h_len = min(h, 312);
+        int w_len = min(im_w, truth_w);
+        int h_len = min(im_h, truth_h);
         
         image sized_truth;
-        if(w_len != 312 || h_len != 312){
-            sized_truth = resize_image(load_partial_image_stb(data, 3, 0, w_len, 0, h_len, w,h,c), 312, 312);
+        if(w_len != truth_w || h_len != truth_h){
+            sized_truth = resize_image(load_partial_image_stb(data, 3, 0, w_len, 0, h_len, im_w,im_h,im_c), truth_w, truth_h);
             // save_image(sized_truth, "resized_img");
             // printf("!!!!!!!!!!!!!!!!!!!!!!!!!!: w was %d and h was %d\n", w, h);
             // printf("current image size is %d and %d", sized_truth.w, sized_truth.h);
         } else {
-            sized_truth = load_partial_image_stb(data, 3, w_start, w_len, h_start, h_len, w,h,c);
+            sized_truth = load_partial_image_stb(data, 3, w_start, w_len, h_start, h_len, im_w,im_h,im_c);
             // if(rand()%10 == 0){
             //     save_image(sized_truth, "unresized_img");
 
@@ -2076,7 +2075,7 @@ data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int 
         }
 
 
-        image sized = resize_image(sized_truth, 104, 104);
+        image sized = resize_image(sized_truth, w, h);
         free(data);
 
         int flip = 0;

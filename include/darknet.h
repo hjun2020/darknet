@@ -576,6 +576,8 @@ typedef struct load_args{
     image *resized;
     data_type type;
     tree *hierarchy;
+
+    int espcn_scale; //added for espcn
 } load_args;
 
 

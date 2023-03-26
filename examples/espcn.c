@@ -59,6 +59,8 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     args.d = &buffer;
     args.type = ENHENCE_DATA;
 
+    args.espcn_scale = 2;
+
     args.threads = 64;
 
 
