@@ -103,7 +103,7 @@ void forward_espcn_layer_gpu(espcn_layer l, network net)
             float *im = net.input_gpu + (i*l.groups + j)*l.c/l.groups*l.h*l.w;
             int num_kernels = l.out_w*l.out_h * 3; 
             // espcn_forward_gpu_kernel(im, l.h, l.w, l.espcn_scale, l.out_h, l.out_w, c);
-            espcn_forward_gpu_kernel<<<(num_kernels+BLOCK-1)/BLOCK, BLOCK>>>(im, l.h, l.w, 3,l.out_h, l.out_w,c);
+            espcn_forward_gpu_kernel<<<(num_kernels+BLOCK-1)/BLOCK, BLOCK>>>(im, l.h, l.w, l.scale,l.out_h, l.out_w,c);
         }
     }
 // #endif
@@ -120,7 +120,7 @@ void backward_espcn_layer_gpu(espcn_layer l, network net)
             float *imd = net.delta_gpu + (i*l.groups + j)*l.c/l.groups*l.h*l.w;
             if (net.delta_gpu) {
                 int num_kernels = l.out_w*l.out_h * 3; 
-                espcn_backward_gpu_kernel<<<(num_kernels+BLOCK-1)/BLOCK, BLOCK>>>(a, l.h, l.w,l.c, 3,l.out_h, l.out_w,l.n, imd);
+                espcn_backward_gpu_kernel<<<(num_kernels+BLOCK-1)/BLOCK, BLOCK>>>(a, l.h, l.w,l.c, l.scale,l.out_h, l.out_w,l.n, imd);
             }
         }
     }

@@ -128,7 +128,7 @@ void *load_input_im_demo(void *ptr)
 
 void *display_in_thread_espcn_demo(void *ptr)
 {
-    int c = show_image(resize_image(out_im_buffer[(buff_index + 1)%3], 1280, 730), "Demo", 1);
+    int c = show_image(out_im_buffer[(buff_index + 1)%3], "Demo", 1);
     // if (c != -1) c = c%256;
     // if (c == 27) {
     //     demo_done = 1;
@@ -198,7 +198,7 @@ void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     args.h_extra_offset = (args.in_h * args.num_rows - args.out_h) % (args.num_rows - 1);
     args.w_extra_offset = (args.in_w * args.num_cols - args.out_w) % (args.num_cols - 1);
 
-    args.espcn_scale = 3;
+    args.espcn_scale = sqrt(net->outputs / net->inputs);
 
     args.in_w_pred = args.in_w * args.espcn_scale;
     args.in_h_pred = args.in_h * args.espcn_scale;
