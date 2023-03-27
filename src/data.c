@@ -2078,9 +2078,6 @@ data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int 
         image sized = resize_image(sized_truth, w, h);
         free(data);
 
-        save_image(sized, "data_test/size1");
-        save_image(sized_truth, "data_test/size2");
-
         int flip = 0;
         if(flip) flip_image(sized);
         d.X.vals[i] = sized.data;
