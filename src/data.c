@@ -2029,7 +2029,7 @@ data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int 
     d.X.vals = calloc(d.X.rows, sizeof(float*));
     d.X.cols = h*w*3;
 
-    d.y = make_matrix(n, w*h*espcn_scale*espcn_scale);
+    d.y = make_matrix(n, w*h*espcn_scale*espcn_scale*3);
 
     int truth_w = w * espcn_scale;
     int truth_h = h * espcn_scale;
