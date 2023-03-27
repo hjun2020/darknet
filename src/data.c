@@ -1147,7 +1147,7 @@ void *load_thread(void *ptr)
     } else if (a.type == TAG_DATA){
         *a.d = load_data_tag(a.paths, a.n, a.m, a.classes, a.min, a.max, a.size, a.angle, a.aspect, a.hue, a.saturation, a.exposure);
     } else if (a.type == ENHENCE_DATA){
-        *a.d = load_data_enhence(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure, a.espcn_scale);
+        *a.d = load_data_enhence(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure, a.espcn_scale, a.gaussian_filter);
     } 
     free(ptr);
     return 0;
@@ -2018,7 +2018,36 @@ data load_data_espcn_batch(int n, float *im_data, int h_len, int w_len, int h, i
 
 }
 
-data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale)
+
+// Convolve the image with the Gaussian kernel
+void convolve_gaussian(float *image, float *kernel, int imageSize, int kernelSize, int in_h, int in_w) {
+    float *tempImage = malloc(sizeof(float) * in_h * in_w);
+    int k = kernelSize / 2;
+    int i, j, x, y;
+    for (i = 0; i < imageSize; i++) {
+        for (j = 0; j < imageSize; j++) {
+            float sum = 0.0f;
+            for (x = -k; x <= k; x++) {
+                for (y = -k; y <= k; y++) {
+                    int ii = i + x;
+                    int jj = j + y;
+                    if (ii >= 0 && ii < imageSize && jj >= 0 && jj < imageSize) {
+                        sum += image[ii * imageSize + jj] * kernel[(x + k) * kernelSize + y + k];
+                    }
+                }
+            }
+            tempImage[i * imageSize + j] = sum;
+        }
+    }
+    for (i = 0; i < imageSize; i++) {
+        for (j = 0; j < imageSize; j++) {
+            image[i * imageSize + j] = tempImage[i * imageSize + j];
+        }
+    }
+    free(tempImage);
+}
+
+data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale, float *gaussian_filter)
 {
     char **random_paths = get_random_paths(paths, n, m);
     int i;
@@ -2076,6 +2105,9 @@ data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int 
 
 
         image sized = resize_image(sized_truth, w, h);
+        // save_image(sized, "data_test/non_gaussian");
+        convolve_gaussian(sized.data, gaussian_filter, w, 7, h, w);
+        // save_image(sized, "data_test/gaussian");
         free(data);
 
         int flip = 0;

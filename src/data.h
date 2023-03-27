@@ -31,7 +31,7 @@ data load_data_super(char **paths, int n, int m, int w, int h, int scale);
 data load_data_augment(char **paths, int n, int m, char **labels, int k, tree *hierarchy, int min, int max, int size, float angle, float aspect, float hue, float saturation, float exposure, int center);
 data load_data_regression(char **paths, int n, int m, int classes, int min, int max, int size, float angle, float aspect, float hue, float saturation, float exposure);
 data load_go(char *filename);
-data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale);
+data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale, float *gaussian_filter);
 
 // added for espcn
 data load_data_espcn_batch(int n, float *im_data, int h_len, int w_len, int h, int w, int c, int idx, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, int num_cols, int num_rows);
