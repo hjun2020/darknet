@@ -2108,6 +2108,7 @@ data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int 
         // save_image(sized, "data_test/non_gaussian");
         convolve_gaussian(sized.data, gaussian_filter, w, 7, h, w);
         // save_image(sized, "data_test/gaussian");
+        // save_image(sized_truth, "data_test/truth");
         free(data);
 
         int flip = 0;

@@ -408,6 +408,7 @@ struct layer{
     float * rand_gpu;
     float * squared_gpu;
     float * norms_gpu;
+
 #ifdef CUDNN
     cudnnTensorDescriptor_t srcTensorDesc, dstTensorDesc;
     cudnnTensorDescriptor_t dsrcTensorDesc, ddstTensorDesc;
@@ -487,11 +488,20 @@ typedef struct network{
     float *cost;
     float clip;
 
+
+    //added for espcn
+    float *original_input;
+    ///////////////////////
+
 #ifdef GPU
     float *input_gpu;
     float *truth_gpu;
     float *delta_gpu;
     float *output_gpu;
+
+    //added for espcn
+    float *original_input_gpu;
+    //////////////////
 #endif
 
 } network;
