@@ -60,6 +60,16 @@ network *load_network(char *cfg, char *weights, int clear)
     return net;
 }
 
+network *load_network_espcn(char *cfg, char *weights, int clear)
+{
+    network *net = parse_network_cfg_espcn(cfg);
+    if(weights && weights[0] != 0){
+        load_weights(net, weights);
+    }
+    if(clear) (*net->seen) = 0;
+    return net;
+}
+
 size_t get_current_batch(network *net)
 {
     size_t batch_num = (*net->seen)/(net->batch*net->subdivisions);
@@ -321,6 +331,29 @@ float train_network(network *net, data d)
     float sum = 0;
     for(i = 0; i < n; ++i){
         get_next_batch(d, batch, i*batch, net->input, net->truth);
+        float err = train_network_datum(net);
+        sum += err;
+    }
+    return (float)sum/(n*batch);
+}
+
+//added for espcn
+float train_network_espcn(network *net, data d)
+{
+    assert(d.X.rows % net->batch == 0);
+    int batch = net->batch;
+    int n = d.X.rows / batch;
+
+    int i;
+    float sum = 0;
+    for(i = 0; i < n; ++i){
+        get_next_batch(d, batch, i*batch, net->input, net->truth);
+        memcpy(net->original_input, net->input, d.X.cols*sizeof(float));
+
+#ifdef GPU
+        cuda_set_device(net->gpu_index);
+        cuda_push_array(net->original_input_gpu, net->original_input, d.X.cols);
+#endif
         float err = train_network_datum(net);
         sum += err;
     }

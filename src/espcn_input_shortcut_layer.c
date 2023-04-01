@@ -1,4 +1,4 @@
-#include "shortcut_layer.h"
+#include "espcn_input_shortcut_layer.h"
 #include "cuda.h"
 #include "blas.h"
 #include "activations.h"
@@ -6,11 +6,11 @@
 #include <stdio.h>
 #include <assert.h>
 
-layer make_shortcut_layer(int batch, int index, int w, int h, int c, int w2, int h2, int c2)
+layer make_shortcut_input_layer(int batch, int index, int w, int h, int c, int w2, int h2, int c2)
 {
     fprintf(stderr, "res  %3d                %4d x%4d x%4d   ->  %4d x%4d x%4d\n",index, w2,h2,c2, w,h,c);
     layer l = {0};
-    l.type = SHORTCUT;
+    l.type = SHORTCUT_INPUT;
     l.batch = batch;
     l.w = w2;
     l.h = h2;
@@ -26,11 +26,11 @@ layer make_shortcut_layer(int batch, int index, int w, int h, int c, int w2, int
     l.delta =  calloc(l.outputs*batch, sizeof(float));
     l.output = calloc(l.outputs*batch, sizeof(float));;
 
-    l.forward = forward_shortcut_layer;
-    l.backward = backward_shortcut_layer;
+    l.forward = forward_shortcut_input_layer;
+    l.backward = backward_shortcut_input_layer;
     #ifdef GPU
-    l.forward_gpu = forward_shortcut_layer_gpu;
-    l.backward_gpu = backward_shortcut_layer_gpu;
+    l.forward_gpu = forward_shortcut_input_layer_gpu;
+    l.backward_gpu = backward_shortcut_input_layer_gpu;
 
     l.delta_gpu =  cuda_make_array(l.delta, l.outputs*batch);
     l.output_gpu = cuda_make_array(l.output, l.outputs*batch);
@@ -38,7 +38,7 @@ layer make_shortcut_layer(int batch, int index, int w, int h, int c, int w2, int
     return l;
 }
 
-void resize_shortcut_layer(layer *l, int w, int h)
+void resize_shortcut_input_layer(layer *l, int w, int h)
 {
     assert(l->w == l->out_w);
     assert(l->h == l->out_h);
@@ -59,32 +59,36 @@ void resize_shortcut_layer(layer *l, int w, int h)
 }
 
 
-void forward_shortcut_layer(const layer l, network net)
+void forward_shortcut_input_layer(const layer l, network net)
 {
     copy_cpu(l.outputs*l.batch, net.input, 1, l.output, 1);
     shortcut_cpu(l.batch, l.w, l.h, l.c, net.original_input, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output);
     activate_array(l.output, l.outputs*l.batch, l.activation);
 }
 
-void backward_shortcut_layer(const layer l, network net)
+void backward_shortcut_input_layer(const layer l, network net)
 {
     gradient_array(l.output, l.outputs*l.batch, l.activation, l.delta);
     axpy_cpu(l.outputs*l.batch, l.alpha, l.delta, 1, net.delta, 1);
-    shortcut_cpu(l.batch, l.out_w, l.out_h, l.out_c, l.delta, l.w, l.h, l.c, 1, l.beta, net.layers[l.index].delta);
+    // shortcut_cpu(l.batch, l.out_w, l.out_h, l.out_c, l.delta, l.w, l.h, l.c, 1, l.beta, net.layers[l.index].delta);
 }
 
 #ifdef GPU
-void forward_shortcut_layer_gpu(const layer l, network net)
+void forward_shortcut_input_layer_gpu(const layer l, network net)
 {
     copy_gpu(l.outputs*l.batch, net.input_gpu, 1, l.output_gpu, 1);
-    shortcut_gpu(l.batch, l.w, l.h, l.c, net.layers[l.index].output_gpu, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output_gpu);
+    shortcut_gpu(l.batch, l.w, l.h, l.c, net.original_input, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output_gpu);
     activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
+
+    // image im = make_empty_image(104,104,3);
+    // im.data = net.original_input;
+    // save_image(im, "data_test/test_original_img");
 }
 
-void backward_shortcut_layer_gpu(const layer l, network net)
+void backward_shortcut_input_layer_gpu(const layer l, network net)
 {
     gradient_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation, l.delta_gpu);
     axpy_gpu(l.outputs*l.batch, l.alpha, l.delta_gpu, 1, net.delta_gpu, 1);
-    shortcut_gpu(l.batch, l.out_w, l.out_h, l.out_c, l.delta_gpu, l.w, l.h, l.c, 1, l.beta, net.layers[l.index].delta_gpu);
+    // shortcut_gpu(l.batch, l.out_w, l.out_h, l.out_c, l.delta_gpu, l.w, l.h, l.c, 1, l.beta, net.layers[l.index].delta_gpu);
 }
 #endif 

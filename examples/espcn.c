@@ -45,7 +45,7 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 #ifdef GPU
         cuda_set_device(gpus[i]);
 #endif
-        nets[i] = load_network(cfgfile, weightfile, clear);
+        nets[i] = load_network_espcn(cfgfile, weightfile, clear);
         nets[i]->learning_rate *= ngpus;
     }
     srand(time(0));
@@ -131,7 +131,7 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 
 #ifdef GPU
         if(ngpus == 1){
-            loss = train_network(net, train);
+            loss = train_network_espcn(net, train);
         } else {
             loss = train_networks(nets, ngpus, train, 4);
         }
@@ -160,6 +160,7 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             save_weights(net, buff);
         }
         free_data(train);
+        sleep(5);
     }
 #ifdef GPU
     if(ngpus != 1) sync_nets(nets, ngpus, 0);

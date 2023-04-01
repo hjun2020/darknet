@@ -37,7 +37,10 @@
 #include "lstm_layer.h"
 #include "utils.h"
 
+
+//added for espcn
 #include "espcn_layer.h"
+#include "espcn_input_shortcut_layer.h"
 
 typedef struct{
     char *type;
@@ -86,6 +89,7 @@ LAYER_TYPE string_to_layer_type(char * type)
     if (strcmp(type, "[route]")==0) return ROUTE;
     if (strcmp(type, "[upsample]")==0) return UPSAMPLE;
     if (strcmp(type, "[espcn]")==0) return ESPCN;
+    if (strcmp(type, "[shortcut_input]")==0) return SHORTCUT_INPUT;
     return BLANK;
 }
 
@@ -197,6 +201,27 @@ espcn_layer parse_espcn(list *options, size_params params)
     espcn_layer layer = make_espcn_layer(batch,h,w,c,n,groups);
 
     return layer;
+}
+
+
+
+layer parse_espcn_shortcut_input(list *options, size_params params, network *net)
+{
+    char *l = option_find(options, "from");
+    int index = atoi(l);
+    if(index < 0) index = params.index + index;
+
+    int batch = params.batch;
+    layer from = net->layers[index];
+
+    layer s = make_shortcut_input_layer(batch, index, params.w, params.h, params.c, from.out_w, from.out_h, from.out_c);
+
+    char *activation_s = option_find_str(options, "activation", "linear");
+    ACTIVATION activation = get_activation(activation_s);
+    s.activation = activation;
+    s.alpha = option_find_float_quiet(options, "alpha", 1);
+    s.beta = option_find_float_quiet(options, "beta", 1);
+    return s;
 }
 
 convolutional_layer parse_convolutional(list *options, size_params params)
@@ -893,6 +918,8 @@ network *parse_network_cfg(char *filename)
     net->output = out.output;
     net->input = calloc(net->inputs*net->batch, sizeof(float));
     net->truth = calloc(net->truths*net->batch, sizeof(float));
+
+
 #ifdef GPU
     net->output_gpu = out.output_gpu;
     net->input_gpu = cuda_make_array(net->input, net->inputs*net->batch);
@@ -912,6 +939,165 @@ network *parse_network_cfg(char *filename)
     }
     return net;
 }
+
+network *parse_network_cfg_espcn(char *filename)
+{
+    list *sections = read_cfg(filename);
+    node *n = sections->front;
+    if(!n) error("Config file has no sections");
+    network *net = make_network(sections->size - 1);
+    net->gpu_index = gpu_index;
+    size_params params;
+
+    section *s = (section *)n->val;
+    list *options = s->options;
+    if(!is_network(s)) error("First section must be [net] or [network]");
+    parse_net_options(options, net);
+
+    params.h = net->h;
+    params.w = net->w;
+    params.c = net->c;
+    params.inputs = net->inputs;
+    params.batch = net->batch;
+    params.time_steps = net->time_steps;
+    params.net = net;
+
+    size_t workspace_size = 0;
+    n = n->next;
+    int count = 0;
+    free_section(s);
+    fprintf(stderr, "layer     filters    size              input                output\n");
+    while(n){
+        params.index = count;
+        fprintf(stderr, "%5d ", count);
+        s = (section *)n->val;
+        options = s->options;
+        layer l = {0};
+        LAYER_TYPE lt = string_to_layer_type(s->type);
+        if(lt == CONVOLUTIONAL){
+            l = parse_convolutional(options, params);
+        }else if(lt == DECONVOLUTIONAL){
+            l = parse_deconvolutional(options, params);
+        }else if(lt == LOCAL){
+            l = parse_local(options, params);
+        }else if(lt == ACTIVE){
+            l = parse_activation(options, params);
+        }else if(lt == LOGXENT){
+            l = parse_logistic(options, params);
+        }else if(lt == L2NORM){
+            l = parse_l2norm(options, params);
+        }else if(lt == RNN){
+            l = parse_rnn(options, params);
+        }else if(lt == GRU){
+            l = parse_gru(options, params);
+        }else if (lt == LSTM) {
+            l = parse_lstm(options, params);
+        }else if(lt == CRNN){
+            l = parse_crnn(options, params);
+        }else if(lt == CONNECTED){
+            l = parse_connected(options, params);
+        }else if(lt == CROP){
+            l = parse_crop(options, params);
+        }else if(lt == COST){
+            l = parse_cost(options, params);
+        }else if(lt == REGION){
+            l = parse_region(options, params);
+        }else if(lt == YOLO){
+            l = parse_yolo(options, params);
+        }else if(lt == ISEG){
+            l = parse_iseg(options, params);
+        }else if(lt == DETECTION){
+            l = parse_detection(options, params);
+        }else if(lt == SOFTMAX){
+            l = parse_softmax(options, params);
+            net->hierarchy = l.softmax_tree;
+        }else if(lt == NORMALIZATION){
+            l = parse_normalization(options, params);
+        }else if(lt == BATCHNORM){
+            l = parse_batchnorm(options, params);
+        }else if(lt == MAXPOOL){
+            l = parse_maxpool(options, params);
+        }else if(lt == REORG){
+            l = parse_reorg(options, params);
+        }else if(lt == AVGPOOL){
+            l = parse_avgpool(options, params);
+        }else if(lt == ROUTE){
+            l = parse_route(options, params, net);
+        }else if(lt == UPSAMPLE){
+            l = parse_upsample(options, params, net);
+        }else if(lt == SHORTCUT){
+            l = parse_shortcut(options, params, net);
+        }else if(lt == DROPOUT){
+            l = parse_dropout(options, params);
+            l.output = net->layers[count-1].output;
+            l.delta = net->layers[count-1].delta;
+#ifdef GPU
+            l.output_gpu = net->layers[count-1].output_gpu;
+            l.delta_gpu = net->layers[count-1].delta_gpu;
+#endif
+        }else if(lt == ESPCN){
+            l = parse_espcn(options, params);
+        }else if(lt == SHORTCUT_INPUT){
+            l = parse_espcn_shortcut_input(options, params, net);
+        }else{
+            fprintf(stderr, "Type not recognized: %s\n", s->type);
+        }
+        l.clip = net->clip;
+        l.truth = option_find_int_quiet(options, "truth", 0);
+        l.onlyforward = option_find_int_quiet(options, "onlyforward", 0);
+        l.stopbackward = option_find_int_quiet(options, "stopbackward", 0);
+        l.dontsave = option_find_int_quiet(options, "dontsave", 0);
+        l.dontload = option_find_int_quiet(options, "dontload", 0);
+        l.numload = option_find_int_quiet(options, "numload", 0);
+        l.dontloadscales = option_find_int_quiet(options, "dontloadscales", 0);
+        l.learning_rate_scale = option_find_float_quiet(options, "learning_rate", 1);
+        l.smooth = option_find_float_quiet(options, "smooth", 0);
+        option_unused(options);
+        net->layers[count] = l;
+        if (l.workspace_size > workspace_size) workspace_size = l.workspace_size;
+        free_section(s);
+        n = n->next;
+        ++count;
+        if(n){
+            params.h = l.out_h;
+            params.w = l.out_w;
+            params.c = l.out_c;
+            params.inputs = l.outputs;
+        }
+    }
+    free_list(sections);
+    layer out = get_network_output_layer(net);
+    net->outputs = out.outputs;
+    net->truths = out.outputs;
+    if(net->layers[net->n-1].truths) net->truths = net->layers[net->n-1].truths;
+    net->output = out.output;
+    net->input = calloc(net->inputs*net->batch, sizeof(float));
+    net->truth = calloc(net->truths*net->batch, sizeof(float));
+    
+    net->original_input = calloc(net->inputs*net->batch, sizeof(float));
+
+#ifdef GPU
+    net->output_gpu = out.output_gpu;
+    net->input_gpu = cuda_make_array(net->input, net->inputs*net->batch);
+    net->truth_gpu = cuda_make_array(net->truth, net->truths*net->batch);
+
+    net->original_input_gpu = cuda_make_array(net->input, net->inputs*net->batch);
+#endif
+    if(workspace_size){
+        //printf("%ld\n", workspace_size);
+#ifdef GPU
+        if(gpu_index >= 0){
+            net->workspace = cuda_make_array(0, (workspace_size-1)/sizeof(float)+1);
+        }else {
+            net->workspace = calloc(1, workspace_size);
+        }
+#else
+        net->workspace = calloc(1, workspace_size);
+#endif
+    }
+    return net;
+}
+
 
 list *read_cfg(char *filename)
 {

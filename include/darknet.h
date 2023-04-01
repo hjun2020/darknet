@@ -88,7 +88,8 @@ typedef enum {
     LOGXENT,
     L2NORM,
     BLANK,
-    ESPCN
+    ESPCN,
+    SHORTCUT_INPUT
 } LAYER_TYPE;
 
 typedef enum{
@@ -641,6 +642,9 @@ typedef struct{
 
 
 network *load_network(char *cfg, char *weights, int clear);
+//added for espcn
+network *load_network_espcn(char *cfg, char *weights, int clear);
+/////////////
 load_args get_base_args(network *net);
 
 void free_data(data d);
@@ -699,6 +703,7 @@ void backward_network_gpu(network *net);
 void update_network_gpu(network *net);
 
 float train_networks(network **nets, int n, data d, int interval);
+
 void sync_nets(network **nets, int n, int interval);
 void harmless_update_network_gpu(network *net);
 #endif
@@ -738,6 +743,9 @@ int option_find_int(list *l, char *key, int def);
 int option_find_int_quiet(list *l, char *key, int def);
 
 network *parse_network_cfg(char *filename);
+//added for espcn
+network *parse_network_cfg_espcn(char *filename);
+/////////////////
 void save_weights(network *net, char *filename);
 void load_weights(network *net, char *filename);
 void save_weights_upto(network *net, char *filename, int cutoff);
@@ -832,6 +840,9 @@ void make_window(char *name, int w, int h, int fullscreen);
 
 void free_image(image m);
 float train_network(network *net, data d);
+//added for espcn
+float train_network_espcn(network *net, data d);
+///////////////////
 pthread_t load_data_in_thread(load_args args);
 void load_data_blocking(load_args args);
 list *get_paths(char *filename);
