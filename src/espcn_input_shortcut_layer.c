@@ -77,7 +77,7 @@ void backward_shortcut_input_layer(const layer l, network net)
 void forward_shortcut_input_layer_gpu(const layer l, network net)
 {
     copy_gpu(l.outputs*l.batch, net.input_gpu, 1, l.output_gpu, 1);
-    shortcut_gpu(l.batch, l.w, l.h, l.c, net.original_input, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output_gpu);
+    shortcut_gpu(l.batch, l.w, l.h, l.c, net.original_input_gpu, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output_gpu);
     activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
 
     // image im = make_empty_image(104,104,3);
