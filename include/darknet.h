@@ -817,6 +817,10 @@ image **load_alphabet();
 image get_network_image(network *net);
 float *network_predict(network *net, float *input);
 
+//added for espcn
+float *network_predict_input_skip(network *net, float *input);
+///////////////////////////
+
 int network_width(network *net);
 int network_height(network *net);
 float *network_predict_image(network *net, image im);

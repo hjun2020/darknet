@@ -560,6 +560,24 @@ float *network_predict(network *net, float *input)
     return out;
 }
 
+float *network_predict_input_skip(network *net, float *input)
+{
+    network orig = *net;
+    net->input = input;
+    memcpy(net->original_input, net->input, net->inputs*net->batch*sizeof(float));
+#ifdef GPU
+    cuda_push_array(net->original_input_gpu, net->original_input, net->inputs*net->batch);
+#endif
+
+    net->truth = 0;
+    net->train = 0;
+    net->delta = 0;
+    forward_network(net);
+    float *out = net->output;
+    *net = orig;
+    return out;
+}
+
 int num_detections(network *net, float thresh)
 {
     int i;

@@ -44,7 +44,8 @@ static int demo_done = 0;
 
 void *predict_in_thread(void *ptr)
 {
-    memcpy(pred_buffer[(buff_index+1)%3], network_predict(net, network_input_buffer[(buff_index+1)%3]), net->batch*net->outputs*sizeof(float));
+    memcpy(pred_buffer[(buff_index+1)%3], network_predict_input_skip(net, network_input_buffer[(buff_index+1)%3]), net->batch*net->outputs*sizeof(float));
+
 }
 
 
@@ -169,7 +170,7 @@ void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
 #ifdef GPU
         cuda_set_device(gpus[i]);
 #endif
-        nets[i] = load_network(cfgfile, weightfile, clear);
+        nets[i] = load_network_espcn(cfgfile, weightfile, clear);
         nets[i]->learning_rate *= ngpus;
     }
     // srand(time(0));
@@ -222,7 +223,7 @@ void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     net->batch = args.n;
     net->subdivisions = 1;
 
-    printf("%d!!!!!!!!!!!!!!! \n", args.n);
+    printf("%d %d!!!!!!!!!!!!!!! \n", args.n, args.espcn_scale);
 
 
 
