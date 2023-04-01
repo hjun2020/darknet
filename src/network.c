@@ -351,8 +351,9 @@ float train_network_espcn(network *net, data d)
         memcpy(net->original_input, net->input, d.X.cols*sizeof(float));
 
 #ifdef GPU
-        cuda_set_device(net->gpu_index);
+        // cuda_set_device(net->gpu_index);
         cuda_push_array(net->original_input_gpu, net->original_input, d.X.cols);
+        
 #endif
         float err = train_network_datum(net);
         sum += err;
@@ -846,10 +847,17 @@ void forward_network_gpu(network *netp)
     network net = *netp;
     cuda_set_device(net.gpu_index);
     cuda_push_array(net.input_gpu, net.input, net.inputs*net.batch);
+
     if(net.truth){
         cuda_push_array(net.truth_gpu, net.truth, net.truths*net.batch);
     }
-
+    ///////////////////////////////////////
+    // float *temp = calloc(net.inputs*net.batch, sizeof(float));
+    // cuda_pull_array(net.original_input_gpu,temp, net.inputs*net.batch);
+    // image im = make_empty_image(104,104,3);
+    // im.data = temp;
+    // save_image(im, "data_test/temp22");
+    //////////////////////////////////////////
     int i;
     for(i = 0; i < net.n; ++i){
         net.index = i;
