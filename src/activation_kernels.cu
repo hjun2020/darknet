@@ -48,6 +48,15 @@ __device__ float stair_activate_kernel(float x)
     if (n%2 == 0) return floorf(x/2);
     else return (x - n) + floorf(x/2);
 }
+
+//added for espcn
+__device__ float upper_relu_activate_kernel(float x)
+{
+    if(x < 0) return 0;
+    if(x > 1) return 1;
+    return x;
+}
+////////////////////////////////////////
  
 
 __device__ float hardtan_gradient_kernel(float x)
@@ -75,6 +84,9 @@ __device__ float stair_gradient_kernel(float x)
     if (floorf(x) == x) return 0;
     return 1;
 }
+//added for espcn
+__device__ float upper_relu_gradient_kernel(float x){return (x>0 && x<1);}
+///////////////////////////////
 
 __device__ float activate_kernel(float x, ACTIVATION a)
 {
@@ -107,6 +119,8 @@ __device__ float activate_kernel(float x, ACTIVATION a)
             return hardtan_activate_kernel(x);
         case LHTAN:
             return lhtan_activate_kernel(x);
+        case UPPERRELU:
+            return upper_relu_activate_kernel(x); //added for espcn
     }
     return 0;
 }
@@ -142,6 +156,8 @@ __device__ float gradient_kernel(float x, ACTIVATION a)
             return hardtan_gradient_kernel(x);
         case LHTAN:
             return lhtan_gradient_kernel(x);
+        case UPPERRELU:
+            return upper_relu_gradient_kernel(x);
     }
     return 0;
 }

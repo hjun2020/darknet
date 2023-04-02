@@ -46,7 +46,12 @@ static inline float plse_activate(float x)
 }
 
 //added for espcn
-static inline float upper_relu_activate(float x){return x*(x>0);}
+static inline float upper_relu_activate(float x)
+{
+    if(x < 0) return 0;
+    if(x > 1) return 1;
+    return x;
+}
 //////////////////////////
 
 static inline float lhtan_activate(float x)
