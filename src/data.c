@@ -2103,7 +2103,7 @@ data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int 
             // }
         }
 
-
+        // TODO: put it back
         image sized = resize_image(sized_truth, (int)w/3, (int) h/3);
         // save_image(sized, "data_test/non_gaussian");
         sized = resize_image(sized, w, h);

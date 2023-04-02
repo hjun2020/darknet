@@ -45,6 +45,10 @@ static inline float plse_activate(float x)
     return .125*x + .5;
 }
 
+//added for espcn
+static inline float upper_relu_activate(float x){return x*(x>0);}
+//////////////////////////
+
 static inline float lhtan_activate(float x)
 {
     if(x < 0) return .001*x;
@@ -82,6 +86,9 @@ static inline float ramp_gradient(float x){return (x>0)+.1;}
 static inline float leaky_gradient(float x){return (x>0) ? 1 : .1;}
 static inline float tanh_gradient(float x){return 1-x*x;}
 static inline float plse_gradient(float x){return (x < 0 || x > 1) ? .01 : .125;}
+
+//added for espcn
+static inline float upper_relu_gradient(float x){return (x>0 && x<1);}
 
 #endif
 

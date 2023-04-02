@@ -58,6 +58,7 @@ ACTIVATION get_activation(char *s)
     if (strcmp(s, "leaky")==0) return LEAKY;
     if (strcmp(s, "tanh")==0) return TANH;
     if (strcmp(s, "stair")==0) return STAIR;
+    if (strcmp(s, "upper_relu")==0) return UPPERRELU; //added for espcn
     fprintf(stderr, "Couldn't find activation function %s, going with ReLU\n", s);
     return RELU;
 }
@@ -93,6 +94,8 @@ float activate(float x, ACTIVATION a)
             return hardtan_activate(x);
         case LHTAN:
             return lhtan_activate(x);
+        case UPPERRELU:
+            return upper_relu_activate(x); //added for espcn
     }
     return 0;
 }
@@ -136,6 +139,8 @@ float gradient(float x, ACTIVATION a)
             return hardtan_gradient(x);
         case LHTAN:
             return lhtan_gradient(x);
+        case UPPERRELU:
+            return upper_relu_gradient(x); //added for espcn
     }
     return 0;
 }

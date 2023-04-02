@@ -79,6 +79,15 @@ void forward_shortcut_input_layer_gpu(const layer l, network net)
     copy_gpu(l.outputs*l.batch, net.input_gpu, 1, l.output_gpu, 1);
     shortcut_gpu(l.batch, l.w, l.h, l.c, net.original_input_gpu, l.out_w, l.out_h, l.out_c, l.alpha, l.beta, l.output_gpu);
     activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
+
+
+    activate_array_gpu(net.original_input_gpu, l.outputs*l.batch, l.activation);
+    image temp = make_empty_image(153,153,3);
+    temp.data = calloc(153*153*3, sizeof(float));
+    cuda_pull_array(net.original_input_gpu, temp.data, 153*153*3);
+    for(int t=0; t<1000; t++) printf("%f   ", temp.data[t]);
+    printf("\n");
+    save_image(temp, "data_test/ssss");
 }
 
 void backward_shortcut_input_layer_gpu(const layer l, network net)
