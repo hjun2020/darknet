@@ -147,6 +147,10 @@ void *display_in_thread_espcn_demo(void *ptr)
     return 0;
 }
 
+void ycbcr_test(char *datacfg, char *cfgfile, char *weightfile, int *gpus, int ngpus, int clear)
+{
+    rgb2ycbcr(1);
+}
 
 
 

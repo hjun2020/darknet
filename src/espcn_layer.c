@@ -79,7 +79,7 @@ espcn_layer make_espcn_layer(int batch, int h, int w, int c, int n, int groups)
     // float scale = 1./sqrt(size*size*c);
     // float scale = sqrt(2./(size*size*c/l.groups));
     int scale = sqrt(c/3);
-    l.scale = scale;
+    l.scale = 3;
     //printf("convscale %f\n", scale);
     //scale = .02;
     //for(i = 0; i < c*n*size*size; ++i) l.weights[i] = scale*rand_uniform(-1, 1);

@@ -748,6 +748,10 @@ image data2im(load_args_espcn args, matrix pred);
 image float2im(load_args_espcn args, float *pred);
 float *network_predict_data_to_float(network *net, data test);
 void espcn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *filename, int *gpus, int ngpus, int clear);
+void ycbcr_test(char *datacfg, char *cfgfile, char *weightfile, int *gpus, int ngpus, int clear); //TEMP!!
+image extract_luminance(char *filename, int channels); //added for espcn
+// void rgb2ycbcr(int a);
+
 
 //image merge_partial_images(images ims, int channel, int w, int h);
 

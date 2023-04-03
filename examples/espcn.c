@@ -61,6 +61,8 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 
     args.espcn_scale = (int)sqrt(net->outputs / net->inputs);
 
+
+
     args.threads = 64;
 
 
@@ -140,6 +142,7 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             save_weights(net, buff);
         }
         free_data(train);
+        // sleep(5);
     }
 #ifdef GPU
     if(ngpus != 1) sync_nets(nets, ngpus, 0);
@@ -183,6 +186,8 @@ static void print_cocos(FILE *fp, char *image_path, detection *dets, int num_box
         }
     }
 }
+
+
 
 // void temp_test(char *cfgfile){
 
@@ -470,6 +475,7 @@ void run_enhancer(int argc, char **argv)
     char *filename = (argc > 6) ? argv[6]: 0;
     // if(0==strcmp(argv[2], "test")) test_enhencer(datacfg, cfg, weights, filename, thresh, hier_thresh, outfile, fullscreen);
     if(0==strcmp(argv[2], "train")) train_enhencer(datacfg, cfg, weights, gpus, ngpus, clear);
+    else if(0==strcmp(argv[2], "test")) ycbcr_test(datacfg, cfg, weights, gpus, ngpus, clear);
     // else if(0==strcmp(argv[2], "data_test")) data_test(datacfg, cfg, weights, filename, gpus, ngpus, clear);
     else if(0==strcmp(argv[2], "espcn_video_demo")) espcn_video_demo(datacfg, cfg, weights, filename, gpus, ngpus, clear);
     // else if(0==strcmp(argv[2], "valid")) validate_enhencer(datacfg, cfg, weights, outfile);

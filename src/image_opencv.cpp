@@ -71,6 +71,15 @@ image mat_to_image(Mat m)
     return im;
 }
 
+image mat_to_image_single_channel(Mat m)
+{
+    // IplImage ipl = m;
+    IplImage ipl = cvIplImage(m);
+    image im = ipl_to_image(&ipl);
+    // rgbgr_image(im);
+    return im;
+}
+
 void *open_video_stream(const char *f, int c, int w, int h, int fps)
 {
     VideoCapture *cap;
@@ -133,6 +142,60 @@ void make_window(char *name, int w, int h, int fullscreen)
         resizeWindow(name, w, h);
         if(strcmp(name, "Demo") == 0) moveWindow(name, 0, 0);
     }
+}
+
+image extract_luminance(char *filename, int channels)
+{
+    int flag = -1;
+    if (channels == 0) flag = -1;
+    else if (channels == 1) flag = 0;
+    else if (channels == 3) flag = 1;
+    else {
+        fprintf(stderr, "OpenCV can't force load with %d channels\n", channels);
+    }
+    Mat m = imread(filename);
+
+    Mat ycrcb;
+    cvtColor(m, ycrcb, COLOR_BGR2YCrCb);
+
+    Mat ycrcb_channels[3];
+    split(ycrcb, ycrcb_channels);
+    image im = mat_to_image_single_channel(ycrcb_channels[0]);
+
+    return im;
+}
+
+void *rgb2ycbcr(int a)
+{
+    Mat img = imread("data/dog.jpg");
+
+    Mat ycrcb;
+    cvtColor(img, ycrcb, COLOR_BGR2YCrCb);
+
+    Mat ycrcb_channels[3];
+    split(ycrcb, ycrcb_channels);
+
+    Mat luminance = ycrcb_channels[0];
+
+
+    // normalize(luminance, normalized, 0, 255, NORM_MINMAX, CV_8UC1);
+
+    // Mat img2 = normalized;
+    // cvtColor(img2, img2, COLOR_GRAY2BGR); 
+
+    // imshow("Original Image", img);
+    // imshow("Luminance Channel", img2);
+    Mat ycbcr1;
+    merge(ycrcb_channels,3, ycbcr1);
+    Mat outimg;
+    cvtColor(ycrcb, outimg, COLOR_YCrCb2RGB);
+
+    save_image(mat_to_image(img), "data_test/original");
+    save_image(mat_to_image(luminance), "data_test/luminance");
+    
+
+    waitKey(0);
+
 }
 
 }
