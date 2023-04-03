@@ -2104,9 +2104,10 @@ data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int 
         }
 
 
-        image sized = resize_image(sized_truth, (int)w/3, (int) h/3);
+        image sized = resize_image(sized_truth, w, h);
+        printf("%d %d\n", w_len,espcn_scale);
         // save_image(sized, "data_test/non_gaussian");
-        sized = resize_image(sized, w, h);
+        // sized = resize_image(sized, w, h);
         convolve_gaussian(sized.data, gaussian_filter, w, 7, h, w);
         // save_image(sized, "data_test/gaussian");
         // save_image(sized_truth, "data_test/truth");

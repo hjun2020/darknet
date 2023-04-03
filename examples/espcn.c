@@ -131,7 +131,7 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 
 #ifdef GPU
         if(ngpus == 1){
-            loss = train_network_espcn(net, train);
+            loss = train_network(net, train);
         } else {
             loss = train_networks(nets, ngpus, train, 4);
         }
