@@ -2087,8 +2087,8 @@ data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes
         // }
         // printf("\n");
 
-        // save_image(sized_truth, "data_test/ps1");
-        // save_image(sized, "data_test/ps2");
+        save_image(sized_truth, "data_test/ps1");
+        save_image(sized, "data_test/ps2");
 
         int flip = 0;
         if(flip) flip_image(sized);

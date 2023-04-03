@@ -1173,6 +1173,11 @@ void pull_network_output(network *net)
 {
     layer l = get_network_output_layer(net);
     cuda_pull_array(l.output_gpu, l.output, l.outputs*l.batch);
+
+    image im = make_empty_image(153,153,1);
+    im.data = l.output;
+    save_image(im, "data_test/res_test");
+
 }
 
 #endif
