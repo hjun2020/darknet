@@ -5,6 +5,41 @@
 static int coco_ids[] = {1,2,3,4,5,6,7,8,9,10,11,13,14,15,16,17,18,19,20,21,22,23,24,25,27,28,31,32,33,34,35,36,37,38,39,40,41,42,43,44,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,67,70,72,73,74,75,76,77,78,79,80,81,82,84,85,86,87,88,89,90};
 
 
+void test_enhancer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, int ngpus, int clear, char *filename)
+{
+    list *options = read_data_cfg(datacfg);
+    char *train_images = option_find_str(options, "train", "data/train.list");
+    char *backup_directory = option_find_str(options, "backup", "/backup/");
+    
+    srand(time(0));
+    char *base = basecfg(cfgfile);
+    float avg_loss = -1;
+    network **nets = calloc(ngpus, sizeof(network));
+
+    srand(time(0));
+    int seed = rand();
+    int i;
+    for(i = 0; i < ngpus; ++i){
+#ifdef GPU
+        cuda_set_device(gpus[i]);
+#endif
+        nets[i] = load_network(cfgfile, weightfile, clear);
+        nets[i]->learning_rate *= ngpus;
+    }
+    srand(time(0));
+    network *net = nets[0];
+
+
+    return;
+    
+    // image im = extract_luminance(filename, 3);
+
+    // printf("%d %d\n", im.w, im.h);
+    // image res = make_empty_image(im.w*3, im.h*3, 1);
+    // res.data = network_predict(net, im.data);
+
+}
+
 void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, int ngpus, int clear)
 {
     list *options = read_data_cfg(datacfg);
@@ -475,8 +510,9 @@ void run_enhancer(int argc, char **argv)
     char *filename = (argc > 6) ? argv[6]: 0;
     // if(0==strcmp(argv[2], "test")) test_enhencer(datacfg, cfg, weights, filename, thresh, hier_thresh, outfile, fullscreen);
     if(0==strcmp(argv[2], "train")) train_enhencer(datacfg, cfg, weights, gpus, ngpus, clear);
-    else if(0==strcmp(argv[2], "test")) ycbcr_test(datacfg, cfg, weights, gpus, ngpus, clear);
+    // else if(0==strcmp(argv[2], "test")) ycbcr_test(datacfg, cfg, weights, gpus, ngpus, clear);
     // else if(0==strcmp(argv[2], "data_test")) data_test(datacfg, cfg, weights, filename, gpus, ngpus, clear);
+    else if(0==strcmp(argv[2], "test")) test_enhancer(datacfg, cfg, weights, gpus, ngpus, clear, filename);
     else if(0==strcmp(argv[2], "espcn_video_demo")) espcn_video_demo(datacfg, cfg, weights, filename, gpus, ngpus, clear);
     // else if(0==strcmp(argv[2], "valid")) validate_enhencer(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "valid2")) validate_enhencer_flip(datacfg, cfg, weights, outfile);

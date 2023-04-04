@@ -913,6 +913,59 @@ network *parse_network_cfg(char *filename)
     return net;
 }
 
+char* get_first_n_chars(const char* str, int n)
+{
+    char* result = (char*) malloc((n + 1) * sizeof(char)); // allocate memory for the result buffer
+    strncpy(result, str, n); // copy the first n characters from str to result
+    result[n] = '\0'; // add a null terminator to the end of the result buffer
+    return result;
+}
+
+list *read_cfg_with_size_option(char *filename, int w, int h, int c)
+{
+    FILE *file = fopen(filename, "r");
+    if(file == 0) file_error(filename);
+    char *line;
+    int nu = 0;
+    list *options = make_list();
+    section *current = 0;
+    while((line=fgetl(file)) != 0){
+        ++ nu;
+        strip(line);
+        switch(line[0]){
+            case '[':
+                current = malloc(sizeof(section));
+                list_insert(options, current);
+                current->options = make_list();
+                current->type = line;
+                break;
+            case '\0':
+            case '#':
+            case ';':
+                free(line);
+                break;
+            default:
+                if(0==strcmp(get_first_n_chars(line, 5), "width")){
+                    sprintf(line, "width=%d", 3000);
+                    printf("%s\n", line);
+                } 
+                    
+                if(0==strcmp(get_first_n_chars(line, 5), "heigh")){
+                    sprintf(line, "height=%d", 234);
+                    printf("%s\n", line);
+            
+                }
+                if(!read_option(line, current->options)){
+                    fprintf(stderr, "Config file error line %d, could parse: %s\n", nu, line);
+                    free(line);
+                }
+                break;
+        }
+    }
+    fclose(file);
+    return options;
+}
+
 list *read_cfg(char *filename)
 {
     FILE *file = fopen(filename, "r");
