@@ -203,7 +203,7 @@ void print_weights(char *cfgfile, char *weightfile, int n)
         //printf("[");
         for(j = 0; j < l.size*l.size*l.c; ++j){
             //if(j > 0) printf(",");
-            printf("%g ", l.weights[i*l.size*l.size*l.c + j]);
+            printf("%g ", l.weights[i*l.size*l.size*l.c + j]); 
         }
         printf("\n");
         //printf("]%s\n", (i == l.n-1)?"":",");

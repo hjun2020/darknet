@@ -111,7 +111,6 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         time=what_time_is_it_now();
         float loss = 0;
 
-        sleep(5);
 
 #ifdef GPU
         if(ngpus == 1){
@@ -144,7 +143,6 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             save_weights(net, buff);
         }
         free_data(train);
-        break;
     }
 #ifdef GPU
     if(ngpus != 1) sync_nets(nets, ngpus, 0);
