@@ -22,6 +22,8 @@ void test_enhancer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, in
 
     image im = extract_luminance(filename, 3);
 
+
+
     rgb2ycbcr(filename);
 
 
