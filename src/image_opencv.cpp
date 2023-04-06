@@ -165,19 +165,25 @@ image extract_luminance(char *filename, int channels)
     return im;
 }
 
-void *rgb2ycbcr(int a)
+
+image *rgb2ycbcr(char *filename)
 {
-    Mat img = imread("data/dog.jpg");
+    Mat img = imread(filename);
 
     Mat ycrcb;
     cvtColor(img, ycrcb, COLOR_BGR2YCrCb);
+
 
     Mat ycrcb_channels[3];
     split(ycrcb, ycrcb_channels);
 
     Mat luminance = ycrcb_channels[0];
 
+    image outim[3];
 
+    outim[0] = mat_to_image_single_channel(ycrcb_channels[0]);
+    outim[1] = mat_to_image_single_channel(ycrcb_channels[1]);
+    outim[2] = mat_to_image_single_channel(ycrcb_channels[2]);
     // normalize(luminance, normalized, 0, 255, NORM_MINMAX, CV_8UC1);
 
     // Mat img2 = normalized;
@@ -190,11 +196,12 @@ void *rgb2ycbcr(int a)
     Mat outimg;
     cvtColor(ycrcb, outimg, COLOR_YCrCb2RGB);
 
-    save_image(mat_to_image(img), "data_test/original");
-    save_image(mat_to_image(luminance), "data_test/luminance");
+    // save_image(mat_to_image(img), "data_test/original");
+    save_image(outim[1], "data_test/luminance");
     
 
-    waitKey(0);
+    // waitKey(0);
+    return outim;
 
 }
 

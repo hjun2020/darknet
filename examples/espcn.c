@@ -11,32 +11,43 @@ void test_enhancer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, in
     char *train_images = option_find_str(options, "train", "data/train.list");
     char *backup_directory = option_find_str(options, "backup", "/backup/");
     
-    srand(time(0));
+    // srand(time(0));
     char *base = basecfg(cfgfile);
     float avg_loss = -1;
     network **nets = calloc(ngpus, sizeof(network));
 
-    srand(time(0));
-    int seed = rand();
+    // srand(time(0));
+    // int seed = rand();
     int i;
+
+    image im = extract_luminance(filename, 3);
+
+    rgb2ycbcr(filename);
+
+
+
     for(i = 0; i < ngpus; ++i){
 #ifdef GPU
         cuda_set_device(gpus[i]);
 #endif
-        nets[i] = load_network(cfgfile, weightfile, clear);
+        nets[i] = load_network_with_size_option(cfgfile, weightfile, clear, im.w, im.h, im.c, 1, 1);
+        // nets[i] = load_network(cfgfile, weightfile, clear);
         nets[i]->learning_rate *= ngpus;
     }
-    srand(time(0));
+    // srand(time(0));
     network *net = nets[0];
 
+    image res = make_empty_image(im.w*3, im.h*3, 1);
+    res.data = network_predict(net, im.data);
+
+    save_image(res, "data_test/res_test1111");
+    save_image(im, "data_test/res_test1111221");
+
+
+    printf("%d %d\n", im.w, im.h);
 
     return;
     
-    // image im = extract_luminance(filename, 3);
-
-    // printf("%d %d\n", im.w, im.h);
-    // image res = make_empty_image(im.w*3, im.h*3, 1);
-    // res.data = network_predict(net, im.data);
 
 }
 

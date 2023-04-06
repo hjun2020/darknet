@@ -632,6 +632,9 @@ typedef struct{
 network *load_network(char *cfg, char *weights, int clear);
 load_args get_base_args(network *net);
 
+//added for espcn
+network *load_network_with_size_option(char *cfg, char *weights, int clear, int w, int h, int c, int batch, int subdivisions);
+
 void free_data(data d);
 
 typedef struct node{
@@ -655,6 +658,9 @@ unsigned char *read_file(char *filename);
 data resize_data(data orig, int w, int h);
 data *tile_data(data orig, int divs, int size);
 data select_data(data *orig, int *inds);
+
+//added for espcn
+list *read_cfg_with_size_option(char *filename, int w, int h, int c, int batch, int subdivisions);
 
 void forward_network(network *net);
 void backward_network(network *net);
@@ -731,6 +737,11 @@ void save_weights(network *net, char *filename);
 void load_weights(network *net, char *filename);
 void save_weights_upto(network *net, char *filename, int cutoff);
 void load_weights_upto(network *net, char *filename, int start, int cutoff);
+
+//added for espcn
+network *parse_network_cfg_with_size_option(char *filename, int w, int h, int c, int batch, int subdivisions);
+
+
 
 void zero_objectness(layer l);
 void get_region_detections(layer l, int w, int h, int netw, int neth, float thresh, int *map, float tree_thresh, int relative, detection *dets);

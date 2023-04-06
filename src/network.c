@@ -50,6 +50,16 @@ load_args get_base_args(network *net)
     return args;
 }
 
+network *load_network_with_size_option(char *cfg, char *weights, int clear, int w, int h, int c, int batch, int subdivisions)
+{
+    network *net = parse_network_cfg_with_size_option(cfg, w, h, c, batch, subdivisions);
+    if(weights && weights[0] != 0){
+        load_weights(net, weights);
+    }
+    if(clear) (*net->seen) = 0;
+    return net;
+}
+
 network *load_network(char *cfg, char *weights, int clear)
 {
     network *net = parse_network_cfg(cfg);
@@ -1173,11 +1183,6 @@ void pull_network_output(network *net)
 {
     layer l = get_network_output_layer(net);
     cuda_pull_array(l.output_gpu, l.output, l.outputs*l.batch);
-
-    image im = make_empty_image(153,153,1);
-    im.data = l.output;
-    save_image(im, "data_test/res_test");
-
 }
 
 #endif

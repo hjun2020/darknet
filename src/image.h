@@ -19,7 +19,7 @@ image get_image_from_stream(void *p);
 image load_image_cv(char *filename, int channels);
 int show_image_cv(image im, const char* name, int ms);
 
-void *rgb2ycbcr(int a); //added for espcn
+image *rgb2ycbcr(char *filename); //added for espcn
 image extract_luminance(char *filename, int channels); //added for espcn
 #endif
 
