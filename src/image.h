@@ -19,8 +19,9 @@ image get_image_from_stream(void *p);
 image load_image_cv(char *filename, int channels);
 int show_image_cv(image im, const char* name, int ms);
 
-image *rgb2ycbcr(char *filename); //added for espcn
+void *rgb2ycbcr(char *filename); //added for espcn
 image extract_luminance(char *filename, int channels); //added for espcn
+void ycbcr2rgb(void *data); //added for espcn
 #endif
 
 float get_color(int c, int x, int max);

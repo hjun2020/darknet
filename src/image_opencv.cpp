@@ -5,6 +5,7 @@
 #include "opencv2/opencv.hpp"
 #include "image.h"
 
+
 #include "opencv2/core/core_c.h"
 #include "opencv2/videoio/legacy/constants_c.h"
 #include "opencv2/highgui/highgui_c.h"
@@ -79,6 +80,8 @@ image mat_to_image_single_channel(Mat m)
     // rgbgr_image(im);
     return im;
 }
+
+
 
 void *open_video_stream(const char *f, int c, int w, int h, int fps)
 {
@@ -167,7 +170,7 @@ image extract_luminance(char *filename, int channels)
 
 
 
-image *rgb2ycbcr(char *filename)
+void *rgb2ycbcr(char *filename)
 {
     Mat img = imread(filename);
     Size size(700, 700); // set the output size
@@ -185,25 +188,42 @@ image *rgb2ycbcr(char *filename)
     image net_output = resize_image(net_input, 700, 700);
     
 
-    Mat outputs[3];
+    Mat *outputs = (Mat *)calloc(3, sizeof(Mat));
 
     outputs[0] = image_to_mat(net_output);
     resize(ycrcb_channels[1], outputs[1], size, 0, 0, cv::INTER_LINEAR); 
     resize(ycrcb_channels[2], outputs[2], size, 0, 0, cv::INTER_LINEAR); 
 
-    Mat output;
-    Mat output2;
+    // Mat output;
+    // Mat output2;
 
-    merge(outputs,3, output);
-    cvtColor(output, output2, COLOR_YCrCb2RGB);
+    // merge(outputs,3, output);
+    // cvtColor(output, output2, COLOR_YCrCb2RGB);
 
-    image outimg33 = mat_to_image(output2);
-    rgbgr_image(outimg33);
-    save_image(outimg33, "data_test/convert_test");
+    // image outimg33 = mat_to_image(output2);
+    // rgbgr_image(outimg33);
+    // save_image(outimg33, "data_test/convert_test");
 
-    return &outimg33;
+    return outputs;
 
 }
+
+void ycbcr2rgb(void *data)
+{
+    Mat *ptr = (Mat *) data;
+    image temp = mat_to_image_single_channel(ptr[0]);
+    printf("DOEN!!!\n");
+    save_image(temp, "data_test/real_test");
+    // Mat output;
+    // Mat output2;
+    // merge(ptr,3, output);
+    // cvtColor(ptr, output2, COLOR_YCrCb2RGB);
+
+    return;
+
+}
+
+
 
 }
 
