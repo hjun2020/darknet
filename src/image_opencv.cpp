@@ -195,10 +195,12 @@ image extract_luminance(char *filename, int channels)
 
 void *rgb2ycbcr(char *filename)
 {
-    Mat img = imread(filename);
-    Size size(600, 600); // set the output size
+    Mat img1 = imread(filename);
+    Mat img;
+    Size size1(200, 200); // set the output size
+    resize(img1, img, size1, 0, 0, cv::INTER_LINEAR); 
 
-    Size size1(600,600);
+    Size size2(600,600);
 
     Mat ycrcb;
     cvtColor(img, ycrcb, COLOR_BGR2YCrCb);
@@ -215,9 +217,9 @@ void *rgb2ycbcr(char *filename)
 
     Mat *outputs = (Mat *)calloc(3, sizeof(Mat));
 
-    resize(ycrcb_channels[0], outputs[0], size, 0, 0, cv::INTER_LINEAR); 
-    resize(ycrcb_channels[1], outputs[1], size1, 0, 0, cv::INTER_LINEAR); 
-    resize(ycrcb_channels[2], outputs[2], size1, 0, 0, cv::INTER_LINEAR); 
+    resize(ycrcb_channels[0], outputs[0], size2, 0, 0, cv::INTER_LINEAR); 
+    resize(ycrcb_channels[1], outputs[1], size2, 0, 0, cv::INTER_LINEAR); 
+    resize(ycrcb_channels[2], outputs[2], size2, 0, 0, cv::INTER_LINEAR); 
 
     Mat output;
     Mat output2;

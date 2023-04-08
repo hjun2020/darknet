@@ -2029,10 +2029,10 @@ data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes
     d.X.vals = calloc(d.X.rows, sizeof(float*));
     d.X.cols = h*w;
 
-    d.y = make_matrix(n, w*h*espcn_scale*espcn_scale);
+    d.y = make_matrix(n, w*h);
 
-    int truth_w = w * espcn_scale;
-    int truth_h = h * espcn_scale;
+    int truth_w = w;
+    int truth_h = h;
 
 
     for(i = 0; i < n; ++i){
@@ -2080,15 +2080,16 @@ data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes
         }
 
 
-        image sized = resize_image(sized_truth, w, h);
+        image sized = resize_image(resize_image(sized_truth, (int) truth_w /3, (int) truth_h /3), truth_w, truth_h);
         // free(data);
         // for(int t=0; t<1000; t++){
         //     printf("%f ",sized.data[t]);
         // }
         // printf("\n");
+        save_image(sized, "data_test/X");
+        save_image(sized_truth, "data_test/Y");
 
-        save_image(sized_truth, "data_test/ps1");
-        save_image(sized, "data_test/ps2");
+
 
         int flip = 0;
         if(flip) flip_image(sized);
