@@ -27,6 +27,9 @@ void test_enhancer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, in
     // image ttemp2 = resize_image(ttemp, 600, 600);
     // save_image(ttemp2, "data_test/simple_resize");
 
+    void *mat_buffer [3];
+    mat_buffer[0] = rgb2ycbcr(filename);
+    ycbcr2rgb(mat_buffer[0]);
 
     void *ptr = rgb2ycbcr(filename);
 
@@ -532,6 +535,7 @@ void run_enhancer(int argc, char **argv)
     // else if(0==strcmp(argv[2], "data_test")) data_test(datacfg, cfg, weights, filename, gpus, ngpus, clear);
     else if(0==strcmp(argv[2], "test")) test_enhancer(datacfg, cfg, weights, gpus, ngpus, clear, filename);
     else if(0==strcmp(argv[2], "espcn_video_demo")) espcn_video_demo(datacfg, cfg, weights, filename, gpus, ngpus, clear);
+    else if(0==strcmp(argv[2], "srcnn_video_demo")) srcnn_video_demo(datacfg, cfg, weights, filename, gpus, ngpus, clear);
     // else if(0==strcmp(argv[2], "valid")) validate_enhencer(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "valid2")) validate_enhencer_flip(datacfg, cfg, weights, outfile);
     // else if(0==strcmp(argv[2], "recall")) validate_enhencer_recall(cfg, weights);

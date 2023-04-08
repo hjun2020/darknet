@@ -63,6 +63,19 @@ Mat image_to_mat(image im)
     return m;
 }
 
+
+//added for espcn TEMP!!!!!!!!!!!!
+image mat_to_image_test(void *ptr)
+{
+    Mat *m = (Mat *) ptr;
+    IplImage ipl = cvIplImage(*m);
+    image im = ipl_to_image(&ipl);
+    rgbgr_image(im);
+    save_image(im, "data_test/TTTSET");
+    return im;
+
+}
+
 image mat_to_image(Mat m)
 {
     // IplImage ipl = m;
@@ -93,6 +106,23 @@ void *open_video_stream(const char *f, int c, int w, int h, int fps)
     if(h) cap->set(CV_CAP_PROP_FRAME_HEIGHT, w);
     if(fps) cap->set(CV_CAP_PROP_FPS, w);
     return (void *) cap;
+}
+
+void *get_mat_from_stream(void *p)
+{
+    VideoCapture *cap = (VideoCapture *)p;
+    Mat m;
+    *cap >> m;
+
+    Mat ycrcb;
+    cvtColor(m, ycrcb, COLOR_BGR2YCrCb);
+    
+    Mat *ycrcb_channels = (Mat *)calloc(3, sizeof(Mat));
+    split(ycrcb, ycrcb_channels);
+
+    // Mat *ycrcb_channels = (Mat *)calloc(1, sizeof(Mat));
+    // ycrcb_channels[0] = m;
+    return ycrcb_channels;
 }
 
 image get_image_from_stream(void *p)
@@ -256,7 +286,7 @@ void merge_ycbcr2rgb(void *data, image im)
 
     
 
-    save_image(res, "data_test/real_soc");
+    // save_image(res, "data_test/napoli");
 
 
 
@@ -266,8 +296,8 @@ void ycbcr2rgb(void *data)
 {
     Mat *ptr = (Mat *) data;
     image temp = mat_to_image_single_channel(ptr[0]);
-    printf("DOEN!!!\n");
-    save_image(temp, "data_test/real_test");
+    // printf("DOEN!!!\n");
+    save_image(temp, "data_test/napoli");
     // Mat output;
     // Mat output2;
     // merge(ptr,3, output);
