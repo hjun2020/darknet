@@ -147,6 +147,29 @@ void make_window(char *name, int w, int h, int fullscreen)
     }
 }
 
+
+image extract_luminance2(void *data)
+{
+    Mat *ptr = (Mat *) data;
+    // int flag = -1;
+    // if (channels == 0) flag = -1;
+    // else if (channels == 1) flag = 0;
+    // else if (channels == 3) flag = 1;
+    // else {
+    //     fprintf(stderr, "OpenCV can't force load with %d channels\n", channels);
+    // }
+    // Mat m = imread(filename);
+
+    // Mat ycrcb;
+    // cvtColor(m, ycrcb, COLOR_BGR2YCrCb);
+
+    // Mat ycrcb_channels[3];
+    // split(ycrcb, ycrcb_channels);
+    image im = mat_to_image_single_channel(ptr[0]);
+
+    return im;
+}
+
 image extract_luminance(char *filename, int channels)
 {
     int flag = -1;
@@ -173,7 +196,9 @@ image extract_luminance(char *filename, int channels)
 void *rgb2ycbcr(char *filename)
 {
     Mat img = imread(filename);
-    Size size(700, 700); // set the output size
+    Size size(600, 600); // set the output size
+
+    Size size1(600,600);
 
     Mat ycrcb;
     cvtColor(img, ycrcb, COLOR_BGR2YCrCb);
@@ -183,28 +208,55 @@ void *rgb2ycbcr(char *filename)
     split(ycrcb, ycrcb_channels);
 
 
-    Mat ycrcb_channels_resized[3];
-    image net_input = mat_to_image_single_channel(ycrcb_channels[0]);
-    image net_output = resize_image(net_input, 700, 700);
+    // Mat ycrcb_channels_resized[3];
+    // image net_input = mat_to_image_single_channel(ycrcb_channels[0]);
+    // image net_output = resize_image(net_input, 700, 700);
     
 
     Mat *outputs = (Mat *)calloc(3, sizeof(Mat));
 
-    outputs[0] = image_to_mat(net_output);
-    resize(ycrcb_channels[1], outputs[1], size, 0, 0, cv::INTER_LINEAR); 
-    resize(ycrcb_channels[2], outputs[2], size, 0, 0, cv::INTER_LINEAR); 
+    resize(ycrcb_channels[0], outputs[0], size, 0, 0, cv::INTER_LINEAR); 
+    resize(ycrcb_channels[1], outputs[1], size1, 0, 0, cv::INTER_LINEAR); 
+    resize(ycrcb_channels[2], outputs[2], size1, 0, 0, cv::INTER_LINEAR); 
 
-    // Mat output;
-    // Mat output2;
+    Mat output;
+    Mat output2;
 
-    // merge(outputs,3, output);
-    // cvtColor(output, output2, COLOR_YCrCb2RGB);
+    merge(outputs,3, output);
+    cvtColor(output, output2, COLOR_YCrCb2RGB);
 
-    // image outimg33 = mat_to_image(output2);
-    // rgbgr_image(outimg33);
-    // save_image(outimg33, "data_test/convert_test");
+    image outimg33 = mat_to_image(output2);
+    rgbgr_image(outimg33);
+    save_image(outimg33, "data_test/opencv_simple_resize");
 
     return outputs;
+
+}
+
+void merge_ycbcr2rgb(void *data, image im)
+{
+    // merge(outputs,3, output);
+    Mat *ptr = (Mat *) data;
+    Mat m = image_to_mat(im);
+
+    Mat output[3];
+    output[0] = image_to_mat(im);
+    output[1] = ptr[1];
+    output[2] = ptr[2];
+
+    Mat output2;
+    merge(output,3, output2);
+    Mat output3;
+    cvtColor(output2, output3, COLOR_YCrCb2RGB);
+
+    image res = mat_to_image(output3);
+    rgbgr_image(res);
+
+    
+
+    save_image(res, "data_test/real_soc");
+
+
 
 }
 

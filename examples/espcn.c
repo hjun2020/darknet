@@ -22,14 +22,15 @@ void test_enhancer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, in
     // int seed = rand();
     int i;
 
-    image im = extract_luminance(filename, 3);
-
+    // image ttemp = load_image_color(filename, 200,200);
+    // save_image(ttemp, "data_test/exam");
+    // image ttemp2 = resize_image(ttemp, 600, 600);
+    // save_image(ttemp2, "data_test/simple_resize");
 
 
     void *ptr = rgb2ycbcr(filename);
 
-    ycbcr2rgb(ptr);
-    free(ptr);
+    image im = extract_luminance2(ptr);
 
 
 
@@ -44,14 +45,12 @@ void test_enhancer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, in
     // srand(time(0));
     network *net = nets[0];
 
-    image res = make_empty_image(im.w*3, im.h*3, 1);
+    image res = make_empty_image(600, 600, 1);
     res.data = network_predict(net, im.data);
 
-    save_image(res, "data_test/res_test1111");
-    save_image(im, "data_test/res_test1111221");
-
-
-    printf("%d %d\n", im.w, im.h);
+    merge_ycbcr2rgb(ptr, res);
+    ycbcr2rgb(ptr);
+    free(ptr);
 
     return;
     
