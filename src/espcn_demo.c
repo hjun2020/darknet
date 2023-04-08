@@ -60,7 +60,7 @@ void *merge_in_thread(void *ptr)
 void load_partial_data_demo(float *im, int n, int h_start, int w_start, int h_len, int w_len, int c, int h, int w, float *dst_buff)
 {
     int i,j,k;
-    int start_offset = n*h_len*w_len*3;
+    int start_offset = n*h_len*w_len*c;
     for(k = 0; k < c; ++k){
         for(j = h_start; j < h_start + h_len; ++j){
             for(i = w_start; i < w_start + w_len; ++i){

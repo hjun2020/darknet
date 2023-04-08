@@ -307,6 +307,16 @@ void ycbcr2rgb(void *data)
 
 }
 
+image get_luminance(void *data)
+{
+    Mat *ptr = (Mat *) data;
+
+    Mat temp;
+    Size size1(640*3, 360*3); // set the output size
+    resize(ptr[0], temp, size1, 0, 0, cv::INTER_LINEAR); 
+    image out = mat_to_image_single_channel(temp);
+    return out;
+}
 
 
 }
