@@ -117,7 +117,7 @@ void *get_mat_from_stream(void *p)
     Mat *ycrcb_channels = (Mat *)calloc(3, sizeof(Mat));
     split(ycrcb, ycrcb_channels);
 
-    Size size2(640*3, 360*3);
+    Size size2(320*3, 240*3);
     resize(ycrcb_channels[0], ycrcb_channels[0],size2 );
     resize(ycrcb_channels[1], ycrcb_channels[1],size2 );
     resize(ycrcb_channels[2], ycrcb_channels[2],size2 );

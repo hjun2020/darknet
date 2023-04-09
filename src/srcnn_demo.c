@@ -99,7 +99,8 @@ static void *data_prep_in_thread_srcnn(void *ptr)
 }
 
 static void *mat_to_image_in_thread_srcnn(void *ptr)
-{
+{   
+    free_image(out_im_buffer[(buff_index+4)%3]);
     out_im_buffer[(buff_index+4)%3] = mat_to_image_ptr(output_mat_buffer[(buff_index+4)%3]);
 }
 
@@ -118,7 +119,7 @@ static void *merge_in_thread_srcnn(void *ptr)
 
 void *display_in_thread_srcnn_demo(void *ptr)
 {
-    int c = show_image(out_im_buffer[(buff_index + 1)%3], "Demo", 1);
+    int c = show_image(out_im_buffer[(buff_index + 5)%3], "Demo", 1);
     // free_image(out_im_buffer[(buff_index + 1)%3]);
     // if (c != -1) c = c%256;
     // if (c == 27) {
@@ -161,7 +162,7 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
 #ifdef GPU
         cuda_set_device(gpus[i]);
 #endif
-        nets[i] = load_network_with_size_option(cfgfile, weightfile, clear, 200, 200, 1, 60, 1);
+        nets[i] = load_network_with_size_option(cfgfile, weightfile, clear, 200, 200, 1, 20, 1);
         nets[i]->learning_rate *= ngpus;
     }
     // srand(time(0));
@@ -285,7 +286,7 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
         if(pthread_create(&merge_thread, 0, merge_in_thread_srcnn, ptr)) error("Thread creation failed");
         if(pthread_create(&output_thread, 0, mat_to_image_in_thread_srcnn, ptr)) error("Thread creation failed");
 
-        if(count > 4) display_in_thread_srcnn_demo(0);
+        if(count > 6) display_in_thread_srcnn_demo(0);
 
         pthread_join(input_thread,0);
         pthread_join(input_y_im_thread,0);
@@ -301,7 +302,7 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
         // if(count > 4) imshow("video", out_im_buffer[buff_index]);
         count++;
 
-        if(count>300) break;
+        if(count>3000) break;
     }
 
     
