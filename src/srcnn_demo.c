@@ -23,6 +23,7 @@ static int buff_index = 0;
 static network *net;
 static image out_im_buffer [3];
 static void *input_mat_buffer [3];
+static void *output_mat_buffer [3];
 static image input_im_buffer[3];
 static float **network_input_buffer [3];
 static void * cap;
@@ -97,18 +98,28 @@ static void *data_prep_in_thread_srcnn(void *ptr)
 
 }
 
+static void *mat_to_image_in_thread_srcnn(void *ptr)
+{
+    out_im_buffer[(buff_index+4)%3] = mat_to_image_ptr(output_mat_buffer[(buff_index+4)%3]);
+}
+
 static void *merge_in_thread_srcnn(void *ptr)
 {
     load_args_espcn args = *(load_args_espcn *)ptr;
-    free_image(out_im_buffer[(buff_index+3)%3]);
+    // free_image(out_im_buffer[(buff_index+3)%3]);
     ///////////////////temp////////////////////////////////////////////////// pred_buffer ----> network_input_buffer
-    out_im_buffer[(buff_index+3)%3] = float2im(args, pred_buffer[(buff_index+3)%3]);    
+    // out_im_buffer[(buff_index+3)%3] = float2im(args, pred_buffer[(buff_index+3)%3]);  
+    image temp = float2im(args, pred_buffer[(buff_index+3)%3]);
+    // save_image(temp, "data_test/METAL1");
+    free(output_mat_buffer[(buff_index+3)%3]);
+    output_mat_buffer[(buff_index+3)%3] = merge_ycbcr(input_mat_buffer[(buff_index+3)%3], temp);
     return 0;
 }
 
 void *display_in_thread_srcnn_demo(void *ptr)
 {
     int c = show_image(out_im_buffer[(buff_index + 1)%3], "Demo", 1);
+    // free_image(out_im_buffer[(buff_index + 1)%3]);
     // if (c != -1) c = c%256;
     // if (c == 27) {
     //     demo_done = 1;
@@ -222,6 +233,11 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     network_input_buffer[1] = calloc(net->inputs*args.n, sizeof(float));
     network_input_buffer[2] = calloc(net->inputs*args.n, sizeof(float));
 
+    output_mat_buffer[0] = get_mat_from_stream(cap);
+    output_mat_buffer[1] = get_mat_from_stream(cap);
+    output_mat_buffer[2] = get_mat_from_stream(cap);
+
+
     // input_im_buffer[0] = load_image_color(filename, 0, 0);
     // input_im_buffer[1] = load_image_color(filename, 0, 0);
     // input_im_buffer[2] = load_image_color(filename, 0, 0);
@@ -238,6 +254,7 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     pthread_t merge_thread;
     pthread_t input_thread;
     pthread_t data_pred_thread;
+    pthread_t output_thread;
 
 
     printf("%d, %d, %d, %d, %d, %d %d %d\n\n", args.out_w, args.out_h, args.num_rows, args.num_cols, args.h_offset, args.w_offset, args.h_extra_offset, args.w_extra_offset);
@@ -266,8 +283,9 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
             if(pthread_create(&predict_thread, 0, predict_in_thread_srcnn, ptr)) error("Thread creation failed");
         // }
         if(pthread_create(&merge_thread, 0, merge_in_thread_srcnn, ptr)) error("Thread creation failed");
+        if(pthread_create(&output_thread, 0, mat_to_image_in_thread_srcnn, ptr)) error("Thread creation failed");
 
-        // if(count > 4) display_in_thread_espcn_demo(0);
+        if(count > 4) display_in_thread_srcnn_demo(0);
 
         pthread_join(input_thread,0);
         pthread_join(input_y_im_thread,0);
@@ -276,7 +294,7 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
             pthread_join(predict_thread,0);
         // }
         pthread_join(merge_thread,0);
-        if(count > 4) display_in_thread_srcnn_demo(0);
+        pthread_join(output_thread,0);
 
         buff_index = (buff_index+1)%3;
         // if(t%1000 == 0) printf("count: %d\n", t);
@@ -290,7 +308,7 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
 
     printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
     printf("%d\n", count);
-    save_image(out_im_buffer[2], "data_test/bal");
+    // save_image(out_im_buffer[2], "data_test/bal");
   
 
     // image im = float2im(args, pred_buffer[2]);

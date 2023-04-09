@@ -65,13 +65,10 @@ Mat image_to_mat(image im)
 
 
 //added for espcn TEMP!!!!!!!!!!!!
-image mat_to_image_test(void *ptr)
+image mat_to_image_test(Mat m)
 {
-    Mat *m = (Mat *) ptr;
-    IplImage ipl = cvIplImage(*m);
+    IplImage ipl = cvIplImage(m);
     image im = ipl_to_image(&ipl);
-    rgbgr_image(im);
-    save_image(im, "data_test/TTTSET");
     return im;
 
 }
@@ -119,6 +116,11 @@ void *get_mat_from_stream(void *p)
     
     Mat *ycrcb_channels = (Mat *)calloc(3, sizeof(Mat));
     split(ycrcb, ycrcb_channels);
+
+    Size size2(640*3, 360*3);
+    resize(ycrcb_channels[0], ycrcb_channels[0],size2 );
+    resize(ycrcb_channels[1], ycrcb_channels[1],size2 );
+    resize(ycrcb_channels[2], ycrcb_channels[2],size2 );
 
     // Mat *ycrcb_channels = (Mat *)calloc(1, sizeof(Mat));
     // ycrcb_channels[0] = m;
@@ -265,11 +267,12 @@ void *rgb2ycbcr(char *filename)
 
 }
 
-void merge_ycbcr2rgb(void *data, image im)
+image merge_ycbcr2rgb(void *data, image im)
 {
     // merge(outputs,3, output);
     Mat *ptr = (Mat *) data;
-    Mat m = image_to_mat(im);
+    // Mat m = image_to_mat(im);
+    // save_image(im, "data_test/METAL");
 
     Mat output[3];
     output[0] = image_to_mat(im);
@@ -281,15 +284,41 @@ void merge_ycbcr2rgb(void *data, image im)
     Mat output3;
     cvtColor(output2, output3, COLOR_YCrCb2RGB);
 
-    image res = mat_to_image(output3);
-    rgbgr_image(res);
+    image res = mat_to_image_test(output3);
+    // image res = make_empty_image(1000,1000,3);
+    // res.data = (float*) calloc(1000*1000*3, sizeof(float));
+    // rgbgr_image(res);
 
     
 
-    // save_image(res, "data_test/napoli");
+    return res;
+}
 
+void *merge_ycbcr(void *data, image im)
+{
+    // merge(outputs,3, output);
+    Mat *ptr = (Mat *) data;
+    // Mat m = image_to_mat(im);
+    // save_image(im, "data_test/METAL");
 
+    Mat output[3];
+    output[0] = image_to_mat(im);
+    output[1] = ptr[1];
+    output[2] = ptr[2];
 
+    Mat output2;
+    merge(output,3, output2);
+    Mat *output3 = (Mat *)calloc(1, sizeof(Mat));
+    cvtColor(output2, output3[0], COLOR_YCrCb2RGB);
+
+    // image res = mat_to_image_test(output3);
+    // image res = make_empty_image(1000,1000,3);
+    // res.data = (float*) calloc(1000*1000*3, sizeof(float));
+    // rgbgr_image(res);
+
+    
+
+    return output3;
 }
 
 void ycbcr2rgb(void *data)
@@ -311,13 +340,22 @@ image get_luminance(void *data)
 {
     Mat *ptr = (Mat *) data;
 
-    Mat temp;
-    Size size1(640*3, 360*3); // set the output size
-    resize(ptr[0], temp, size1, 0, 0, cv::INTER_LINEAR); 
-    image out = mat_to_image_single_channel(temp);
+    // Mat temp;
+    // Size size1(640*3, 360*3); // set the output size
+    // resize(ptr[0], temp, size1, 0, 0, cv::INTER_LINEAR); 
+    image out = mat_to_image_single_channel(ptr[0]);
     return out;
 }
 
+image mat_to_image_ptr(void *data)
+{
+    Mat *ptr = (Mat *) data;
+    image res = mat_to_image_test(ptr[0]);
+    // image res = make_empty_image(1000,1000,3);
+    // res.data = (float*) calloc(1000*1000*3, sizeof(float));
+    // rgbgr_image(res);
+    return res;
+}
 
 }
 
