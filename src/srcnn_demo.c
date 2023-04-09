@@ -18,14 +18,14 @@
 
 
 
-static float **pred_buffer [3];
+static float **pred_buffer [6];
 static int buff_index = 0;
 static network *net;
-static image out_im_buffer [3];
-static void *input_mat_buffer [3];
-static void *output_mat_buffer [3];
-static image input_im_buffer[3];
-static float **network_input_buffer [3];
+static image out_im_buffer [6];
+static void *input_mat_buffer [6];
+static void *output_mat_buffer [6];
+static image input_im_buffer[6];
+static float **network_input_buffer [6];
 static void * cap;
 static int demo_done = 0;
 
@@ -33,7 +33,7 @@ static int demo_done = 0;
 
 static void *predict_in_thread_srcnn(void *ptr)
 {
-    memcpy(pred_buffer[(buff_index+1)%3], network_predict(net, network_input_buffer[(buff_index+1)%3]), net->batch*net->outputs*sizeof(float));
+    memcpy(pred_buffer[(buff_index+3)%6], network_predict(net, network_input_buffer[(buff_index+3)%6]), net->batch*net->outputs*sizeof(float));
 }
 
 static void *load_input_mat_demo(void *ptr)
@@ -43,8 +43,8 @@ static void *load_input_mat_demo(void *ptr)
     // input_im_buffer[buff_index%3] = get_image_from_stream(cap);
 
     // free_image(input_im_buffer[buff_index%3]);
-    free(input_mat_buffer[buff_index%3]);
-    input_mat_buffer[buff_index%3]= get_mat_from_stream(cap);
+    free(input_mat_buffer[buff_index%6]);
+    input_mat_buffer[buff_index%6]= get_mat_from_stream(cap);
     // if(input_mat_buffer[buff_index%3].data == 0) {
     //     demo_done = 1;
     //     return 0;
@@ -55,8 +55,8 @@ static void *load_input_mat_demo(void *ptr)
 
 static void *load_input_im_demo(void *ptr)
 {
-    free_image(input_im_buffer[(buff_index+1)%3]);
-    input_im_buffer[(buff_index+1)%3]= get_luminance(input_mat_buffer[(buff_index+1)%3]);
+    free_image(input_im_buffer[(buff_index+1)%6]);
+    input_im_buffer[(buff_index+1)%6]= get_luminance(input_mat_buffer[(buff_index+1)%6]);
     // image temp= get_luminance(input_mat_buffer[(buff_index+1)%3]);
     // save_image(temp, "data_test/bal");
 
@@ -92,7 +92,7 @@ static void *data_prep_in_thread_srcnn(void *ptr)
             h_start = h_start - h_extra_offset;
         }
 
-        load_partial_data_demo(input_im_buffer[(buff_index+2)%3].data, i, h_start, w_start, h_len, w_len, out_c, out_h, out_w, network_input_buffer[(buff_index+2)%3]);
+        load_partial_data_demo(input_im_buffer[(buff_index+2)%6].data, i, h_start, w_start, h_len, w_len, out_c, out_h, out_w, network_input_buffer[(buff_index+2)%6]);
         
     }
 
@@ -100,8 +100,8 @@ static void *data_prep_in_thread_srcnn(void *ptr)
 
 static void *mat_to_image_in_thread_srcnn(void *ptr)
 {   
-    free_image(out_im_buffer[(buff_index+4)%3]);
-    out_im_buffer[(buff_index+4)%3] = mat_to_image_ptr(output_mat_buffer[(buff_index+4)%3]);
+    free_image(out_im_buffer[(buff_index+5)%6]);
+    out_im_buffer[(buff_index+5)%6] = mat_to_image_ptr(output_mat_buffer[(buff_index+5)%6]);
 }
 
 static void *merge_in_thread_srcnn(void *ptr)
@@ -110,16 +110,16 @@ static void *merge_in_thread_srcnn(void *ptr)
     // free_image(out_im_buffer[(buff_index+3)%3]);
     ///////////////////temp////////////////////////////////////////////////// pred_buffer ----> network_input_buffer
     // out_im_buffer[(buff_index+3)%3] = float2im(args, pred_buffer[(buff_index+3)%3]);  
-    image temp = float2im(args, pred_buffer[(buff_index+3)%3]);
+    image temp = float2im(args, pred_buffer[(buff_index+4)%6]);
     // save_image(temp, "data_test/METAL1");
-    free(output_mat_buffer[(buff_index+3)%3]);
-    output_mat_buffer[(buff_index+3)%3] = merge_ycbcr(input_mat_buffer[(buff_index+3)%3], temp);
+    free(output_mat_buffer[(buff_index+4)%6]);
+    output_mat_buffer[(buff_index+4)%6] = merge_ycbcr(input_mat_buffer[(buff_index+4+3)%6], temp);
     return 0;
 }
 
 void *display_in_thread_srcnn_demo(void *ptr)
 {
-    int c = show_image(out_im_buffer[(buff_index + 5)%3], "Demo", 1);
+    int c = show_image(out_im_buffer[(buff_index + 6)%6], "Demo", 1);
     // free_image(out_im_buffer[(buff_index + 1)%3]);
     // if (c != -1) c = c%256;
     // if (c == 27) {
@@ -215,28 +215,43 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     net->batch = args.n;
     net->subdivisions = 1;
 
-    printf("%d!!!!!!!!!!!!!!! \n", args.n);
 
 
     input_mat_buffer[0]= get_mat_from_stream(cap);
-    input_mat_buffer[1]= get_mat_from_stream(cap);
+    input_mat_buffer[1]= input_mat_buffer[0];
     input_mat_buffer[2]= get_mat_from_stream(cap);
+    input_mat_buffer[3]= get_mat_from_stream(cap);
+    input_mat_buffer[4]= get_mat_from_stream(cap);
+    input_mat_buffer[5]= get_mat_from_stream(cap);
 
     input_im_buffer[0] = get_luminance(input_mat_buffer[0]);
     input_im_buffer[1] = get_luminance(input_mat_buffer[1]);
     input_im_buffer[2] = get_luminance(input_mat_buffer[2]);
+    input_im_buffer[3] = get_luminance(input_mat_buffer[3]);
+    input_im_buffer[4] = get_luminance(input_mat_buffer[4]);
+    input_im_buffer[5] = get_luminance(input_mat_buffer[5]);
 
     pred_buffer[0] = calloc(net->outputs*args.n, sizeof(float));
     pred_buffer[1] = calloc(net->outputs*args.n, sizeof(float));
     pred_buffer[2] = calloc(net->outputs*args.n, sizeof(float));
+    pred_buffer[3] = calloc(net->outputs*args.n, sizeof(float));
+    pred_buffer[4] = calloc(net->outputs*args.n, sizeof(float));
+    pred_buffer[5] = calloc(net->outputs*args.n, sizeof(float));
 
     network_input_buffer[0] = calloc(net->inputs*args.n, sizeof(float));
     network_input_buffer[1] = calloc(net->inputs*args.n, sizeof(float));
     network_input_buffer[2] = calloc(net->inputs*args.n, sizeof(float));
+    network_input_buffer[3] = calloc(net->inputs*args.n, sizeof(float));
+    network_input_buffer[4] = calloc(net->inputs*args.n, sizeof(float));
+    network_input_buffer[5] = calloc(net->inputs*args.n, sizeof(float));
 
+    printf("%d!!!!!!!!!!!!!!! \n", args.n);
     output_mat_buffer[0] = get_mat_from_stream(cap);
     output_mat_buffer[1] = get_mat_from_stream(cap);
     output_mat_buffer[2] = get_mat_from_stream(cap);
+    output_mat_buffer[3] = get_mat_from_stream(cap);
+    output_mat_buffer[4] = get_mat_from_stream(cap);
+    output_mat_buffer[5] = get_mat_from_stream(cap);
 
 
     // input_im_buffer[0] = load_image_color(filename, 0, 0);
@@ -292,12 +307,12 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
         pthread_join(input_y_im_thread,0);
         pthread_join(data_pred_thread,0);
         // if(count > 5){
-            pthread_join(predict_thread,0);
+        pthread_join(predict_thread,0);
         // }
         pthread_join(merge_thread,0);
         pthread_join(output_thread,0);
 
-        buff_index = (buff_index+1)%3;
+        buff_index = (buff_index+1)%6;
         // if(t%1000 == 0) printf("count: %d\n", t);
         // if(count > 4) imshow("video", out_im_buffer[buff_index]);
         count++;
