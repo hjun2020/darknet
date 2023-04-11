@@ -38,13 +38,14 @@ static void *predict_in_thread_srcnn(void *ptr)
 
 static void *load_input_mat_demo(void *ptr)
 {
+    load_args_espcn args = *(load_args_espcn *)ptr;
     // free_image(input_im_buffer[buff_index]);
     // input_im_buffer[buff_index%3] = load_image_color("data/scream.jpg", 0, 0);
     // input_im_buffer[buff_index%3] = get_image_from_stream(cap);
 
     // free_image(input_im_buffer[buff_index%3]);
     free(input_mat_buffer[buff_index%15]);
-    input_mat_buffer[buff_index%15]= get_mat_from_stream(cap);
+    input_mat_buffer[buff_index%15]= get_mat_from_stream(cap, args.out_w, args.out_h);
     // if(input_mat_buffer[buff_index%3].data == 0) {
     //     demo_done = 1;
     //     return 0;
@@ -161,16 +162,6 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
 
     // srand(time(0));
     // int seed = rand();
-    int i;
-    for(i = 0; i < ngpus; ++i){
-#ifdef GPU
-        cuda_set_device(gpus[i]);
-#endif
-        nets[i] = load_network_with_size_option(cfgfile, weightfile, clear, 200, 200, 1, 20, 1);
-        nets[i]->learning_rate *= ngpus;
-    }
-    // srand(time(0));
-    net = nets[0];
 
     if(filename){
     printf("video file: %s\n", filename);
@@ -183,8 +174,8 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     image orig = get_image_from_stream(cap);
     printf("%d, %d\n", orig.w, orig.h);
     args.in_c = 1;
-    args.in_h = net->h;
-    args.in_w = net->w;
+    args.in_h = 200;
+    args.in_w = 200;
     args.out_c = 1;
     args.out_h = orig.h*3;
     args.out_w = orig.w*3;
@@ -195,7 +186,9 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     args.h_extra_offset = (args.in_h * args.num_rows - args.out_h) % (args.num_rows - 1);
     args.w_extra_offset = (args.in_w * args.num_cols - args.out_w) % (args.num_cols - 1);
 
-    args.espcn_scale = sqrt(net->outputs / net->inputs);
+    // args.espcn_scale = sqrt(net->outputs / net->inputs);
+    args.espcn_scale = 1;
+
 
     args.in_w_pred = args.in_w * args.espcn_scale;
     args.in_h_pred = args.in_h * args.espcn_scale;
@@ -216,26 +209,37 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
     args.d = &buffer;
     args.type = ESPCN_DEMO_DATA;
 
+    int i;
+    for(i = 0; i < ngpus; ++i){
+#ifdef GPU
+        cuda_set_device(gpus[i]);
+#endif
+        nets[i] = load_network_with_size_option(cfgfile, weightfile, clear, 200, 200, 1, args.n, 1);
+        nets[i]->learning_rate *= ngpus;
+    }
+    // srand(time(0));
+    net = nets[0];
+
     net->batch = args.n;
     net->subdivisions = 1;
 
 
 
-    input_mat_buffer[0]= get_mat_from_stream(cap);
-    input_mat_buffer[1]= get_mat_from_stream(cap);
-    input_mat_buffer[2]= get_mat_from_stream(cap);
-    input_mat_buffer[3]= get_mat_from_stream(cap);
-    input_mat_buffer[4]= get_mat_from_stream(cap);
-    input_mat_buffer[5]= get_mat_from_stream(cap);
-    input_mat_buffer[6]= get_mat_from_stream(cap);
-    input_mat_buffer[7]= get_mat_from_stream(cap);
-    input_mat_buffer[8]= get_mat_from_stream(cap);
-    input_mat_buffer[9]= get_mat_from_stream(cap);
-    input_mat_buffer[10]= get_mat_from_stream(cap);
-    input_mat_buffer[11]= get_mat_from_stream(cap);
-    input_mat_buffer[12]= get_mat_from_stream(cap);
-    input_mat_buffer[13]= get_mat_from_stream(cap);
-    input_mat_buffer[14]= get_mat_from_stream(cap);
+    input_mat_buffer[0]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[1]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[2]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[3]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[4]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[5]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[6]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[7]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[8]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[9]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[10]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[11]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[12]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[13]= get_mat_from_stream(cap, args.out_w, args.out_h);
+    input_mat_buffer[14]= get_mat_from_stream(cap, args.out_w, args.out_h);
 
 
     input_im_buffer[0] = get_luminance(input_mat_buffer[0]);
@@ -254,9 +258,9 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
 
 
     printf("%d!!!!!!!!!!!!!!! \n", args.n);
-    output_mat_buffer[0] = get_mat_from_stream(cap);
-    output_mat_buffer[1] = get_mat_from_stream(cap);
-    output_mat_buffer[2] = get_mat_from_stream(cap);
+    output_mat_buffer[0] = get_mat_from_stream(cap, args.out_w, args.out_h);
+    output_mat_buffer[1] = get_mat_from_stream(cap, args.out_w, args.out_h);
+    output_mat_buffer[2] = get_mat_from_stream(cap, args.out_w, args.out_h);
 
 
 
@@ -300,10 +304,7 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
         if(pthread_create(&input_thread, 0, load_input_mat_demo, ptr)) error("Thread creation failed");
         if(pthread_create(&input_y_im_thread, 0, load_input_im_demo, ptr)) error("Thread creation failed");
         if(pthread_create(&data_pred_thread, 0, data_prep_in_thread_srcnn, ptr)) error("Thread creation failed");
-        // if(count > 5){
-
-            if(pthread_create(&predict_thread, 0, predict_in_thread_srcnn, ptr)) error("Thread creation failed");
-        // }
+        if(pthread_create(&predict_thread, 0, predict_in_thread_srcnn, ptr)) error("Thread creation failed");
         if(pthread_create(&merge_thread, 0, merge_in_thread_srcnn, ptr)) error("Thread creation failed");
         if(pthread_create(&output_thread, 0, mat_to_image_in_thread_srcnn, ptr)) error("Thread creation failed");
 
@@ -312,15 +313,11 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
         pthread_join(input_thread,0);
         pthread_join(input_y_im_thread,0);
         pthread_join(data_pred_thread,0);
-        // if(count > 5){
         pthread_join(predict_thread,0);
-        // }
         pthread_join(merge_thread,0);
         pthread_join(output_thread,0);
 
         buff_index = (buff_index+1)%15;
-        // if(t%1000 == 0) printf("count: %d\n", t);
-        // if(count > 4) imshow("video", out_im_buffer[buff_index]);
         count++;
 
         if(count>3000) break;

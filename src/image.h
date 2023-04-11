@@ -24,7 +24,7 @@ image extract_luminance(char *filename, int channels); //added for espcn
 void ycbcr2rgb(void *data); //added for espcn
 image extract_luminance2(void *data); //added for espcn
 image merge_ycbcr2rgb(void *data, image im);//added for espcn
-void *get_mat_from_stream(void *p); //added for espcn
+void *get_mat_from_stream(void *p, int w, int h); //added for espcn
 image get_luminance(void *data); //added for espcn
 void *merge_ycbcr(void *data, image im); //added for espcn
 image mat_to_image_ptr(void *data); //added for espcn

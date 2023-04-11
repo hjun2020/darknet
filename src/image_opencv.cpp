@@ -105,7 +105,7 @@ void *open_video_stream(const char *f, int c, int w, int h, int fps)
     return (void *) cap;
 }
 
-void *get_mat_from_stream(void *p)
+void *get_mat_from_stream(void *p, int w, int h)
 {
     VideoCapture *cap = (VideoCapture *)p;
     Mat m;
@@ -117,10 +117,10 @@ void *get_mat_from_stream(void *p)
     Mat *ycrcb_channels = (Mat *)calloc(3, sizeof(Mat));
     split(ycrcb, ycrcb_channels);
 
-    Size size2(320*3, 240*3);
-    resize(ycrcb_channels[0], ycrcb_channels[0],size2 );
-    resize(ycrcb_channels[1], ycrcb_channels[1],size2 );
-    resize(ycrcb_channels[2], ycrcb_channels[2],size2 );
+    Size size2(w, h);
+    resize(ycrcb_channels[0], ycrcb_channels[0],size2);
+    resize(ycrcb_channels[1], ycrcb_channels[1],size2);
+    resize(ycrcb_channels[2], ycrcb_channels[2],size2);
 
     // Mat *ycrcb_channels = (Mat *)calloc(1, sizeof(Mat));
     // ycrcb_channels[0] = m;
