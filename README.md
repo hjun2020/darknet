@@ -5,7 +5,7 @@
 * SRCNN, Image Super-Resolution Using Deep Convolutional Networks (https://arxiv.org/abs/1501.00092) algorithm is implemented in this repository. 
 * For faster inference implementatinon, multi-threadings are applied in multiple spot, e.g., data input loading, output image convertin. 
 
-# I made some demo videos and those are on Youtube.#
+# I made some demo videos and those are on Youtube #
 * https://www.youtube.com/watch?v=qEWNTEBMlk4
 * https://www.youtube.com/watch?v=z3EA23KzQvM
 
