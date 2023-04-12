@@ -6,8 +6,8 @@
 * For faster inference implementatinon, multi-threadings are applied in multiple spot, e.g., data input loading, output image convertin. 
 
 # I made some demo videos and those are on Youtube #
-* https://www.youtube.com/watch?v=qEWNTEBMlk4
-* https://www.youtube.com/watch?v=z3EA23KzQvM
+* Video resolution upscaled from 640x360 to 1920x 1080: https://www.youtube.com/watch?v=qEWNTEBMlk4
+* Video resolution upscaled from 352x240 to 1056x720: https://www.youtube.com/watch?v=z3EA23KzQvM
 
 
 ## How to compile
