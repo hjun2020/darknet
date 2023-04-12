@@ -1,4 +1,4 @@
-# ESPCN implementation using darknet framework #
+# Real-time SRCNN implementation using darknet framework #
 * Darknet is an open source neural network framework written in C and CUDA, https://github.com/pjreddie/darknet.
 * The main purpose of Darknet is object detection, especially for a detection algorithm, YOLO.
 * The goal of this project is to implement a real-time video enhencing deep learning architecture using Darknet framework with GPU, CUDA, CUDNN and OPENCV.
