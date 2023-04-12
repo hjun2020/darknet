@@ -59,7 +59,6 @@ static void *load_input_im_demo(void *ptr)
     free_image(input_im_buffer[(buff_index+1)%3]);
     int src_idx = (buff_index+1-6)%15;
     if(src_idx < 0) src_idx = 15 + src_idx;
-    printf("%d %d\n", (buff_index+1)%3, src_idx);
     input_im_buffer[(buff_index+1)%3]= get_luminance(input_mat_buffer[src_idx]);
     // image temp= get_luminance(input_mat_buffer[(buff_index+1)%3]);
     // save_image(temp, "data_test/bal");
@@ -320,7 +319,7 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
         buff_index = (buff_index+1)%15;
         count++;
 
-        if(count>3000) break;
+        if(count>280) break;
     }
 
     
