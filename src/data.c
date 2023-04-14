@@ -2086,8 +2086,7 @@ data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes
         //     printf("%f ",sized.data[t]);
         // }
         // printf("\n");
-        save_image(sized, "data_test/X");
-        save_image(sized_truth, "data_test/Y");
+
 
 
 
