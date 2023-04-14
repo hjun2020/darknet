@@ -1147,7 +1147,7 @@ void *load_thread(void *ptr)
     } else if (a.type == TAG_DATA){
         *a.d = load_data_tag(a.paths, a.n, a.m, a.classes, a.min, a.max, a.size, a.angle, a.aspect, a.hue, a.saturation, a.exposure);
     } else if (a.type == ENHENCE_DATA){
-        *a.d = load_data_enhence_ycbcr(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure, a.espcn_scale);
+        *a.d = load_data_enhence_ycbcr(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure, a.espcn_scale, a.gaussian_filter);
     } 
     free(ptr);
     return 0;
@@ -2047,7 +2047,7 @@ void convolve_gaussian(float *image, float *kernel, int imageSize, int kernelSiz
     free(tempImage);
 }
 
-data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale)
+data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale, float *gaussain_filter)
 {
     char **random_paths = get_random_paths(paths, n, m);
     int i;
@@ -2110,6 +2110,8 @@ data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes
 
 
         image sized = resize_image(resize_image(sized_truth, (int) truth_w /3, (int) truth_h /3), truth_w, truth_h);
+
+        convolve_gaussian();
 
 
 
