@@ -198,7 +198,6 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             save_weights(net, buff);
         }
         free_data(train);
-        sleep(10);
     }
 #ifdef GPU
     if(ngpus != 1) sync_nets(nets, ngpus, 0);
