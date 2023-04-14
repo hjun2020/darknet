@@ -2110,13 +2110,7 @@ data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes
 
 
         image sized = resize_image(resize_image(sized_truth, (int) truth_w /3, (int) truth_h /3), truth_w, truth_h);
-        // free(data);
-        // for(int t=0; t<1000; t++){
-        //     printf("%f ",sized.data[t]);
-        // }
-        // printf("\n");
-        save_image(sized, "data_test/X");
-        save_image(sized_truth, "data_test/Y");
+
 
 
 
