@@ -2018,6 +2018,35 @@ data load_data_espcn_batch(int n, float *im_data, int h_len, int w_len, int h, i
 
 }
 
+
+// Convolve the image with the Gaussian kernel
+void convolve_gaussian(float *image, float *kernel, int imageSize, int kernelSize, int in_h, int in_w) {
+    float *tempImage = malloc(sizeof(float) * in_h * in_w);
+    int k = kernelSize / 2;
+    int i, j, x, y;
+    for (i = 0; i < imageSize; i++) {
+        for (j = 0; j < imageSize; j++) {
+            float sum = 0.0f;
+            for (x = -k; x <= k; x++) {
+                for (y = -k; y <= k; y++) {
+                    int ii = i + x;
+                    int jj = j + y;
+                    if (ii >= 0 && ii < imageSize && jj >= 0 && jj < imageSize) {
+                        sum += image[ii * imageSize + jj] * kernel[(x + k) * kernelSize + y + k];
+                    }
+                }
+            }
+            tempImage[i * imageSize + j] = sum;
+        }
+    }
+    for (i = 0; i < imageSize; i++) {
+        for (j = 0; j < imageSize; j++) {
+            image[i * imageSize + j] = tempImage[i * imageSize + j];
+        }
+    }
+    free(tempImage);
+}
+
 data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale)
 {
     char **random_paths = get_random_paths(paths, n, m);
