@@ -115,6 +115,8 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     args.type = ENHENCE_DATA;
 
     args.espcn_scale = (int)sqrt(net->outputs / net->inputs);
+    args.gaussian_filter = malloc(sizeof(float) * 7 * 7);
+    generateKernel(args.gaussian_filter, 7, 1.0f);
 
 
 
