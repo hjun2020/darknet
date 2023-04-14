@@ -2047,7 +2047,7 @@ void convolve_gaussian(float *image, float *kernel, int imageSize, int kernelSiz
     free(tempImage);
 }
 
-data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale, float *gaussain_filter)
+data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale, float *gaussian_filter)
 {
     char **random_paths = get_random_paths(paths, n, m);
     int i;
@@ -2111,7 +2111,7 @@ data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes
 
         image sized = resize_image(resize_image(sized_truth, (int) truth_w /3, (int) truth_h /3), truth_w, truth_h);
 
-        convolve_gaussian();
+        // convolve_gaussian(sized.data, gaussian_filter, w, 7, h, w);
 
 
 
