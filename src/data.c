@@ -1833,6 +1833,10 @@ image float2im(load_args_espcn args, float *pred)
     int h_offset = args.h_offset_pred;
     int w_extra_offset = args.w_extra_offset_pred;
     int h_extra_offset = args.h_extra_offset_pred;
+
+    int layover_offset_w = w_offset / 2;
+    int layover_offset_h = h_offset / 2;
+
     image im = make_image(out_w, out_h, out_c);    
 
     // float *buffer = pred;
@@ -1853,8 +1857,9 @@ image float2im(load_args_espcn args, float *pred)
         int src_start = in_w * in_h * in_c * i;
         for(j=0; j < in_c; j++){
             for(k=0; k < in_h; k++){
-                // printf("channel: %d\n",k);
+                if (k <= layover_offset_h && i != 0) continue;
                 for(m=0; m < in_w; m++){
+                    if (m <= layover_offset_w && i !=0 ) continue;
                     int dst_idx = j*out_w*out_h + (h_start+k) * out_w + (w_start+m);
                     int src_idx = src_start+  j*in_h*in_w + in_w * k +  m ;
                     // printf("%d, %d!!!!!!!!!!!!\n", dst_idx, src_idx);
@@ -2111,10 +2116,10 @@ data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes
 
         image sized = resize_image(resize_image(sized_truth, (int) truth_w /3, (int) truth_h /3), truth_w, truth_h);
 
-        // convolve_gaussian(sized.data, gaussian_filter, w, 7, h, w);
+        convolve_gaussian(sized.data, gaussian_filter, w, 7, h, w);
 
 
-
+        // save_image(sized, "data_test/guass_test");
 
         int flip = 0;
         if(flip) flip_image(sized);

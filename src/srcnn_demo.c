@@ -319,7 +319,7 @@ void srcnn_video_demo(char *datacfg, char *cfgfile, char *weightfile, char *file
         buff_index = (buff_index+1)%15;
         count++;
 
-        if(count>280) break;
+        if(count>400) break;
     }
 
     
