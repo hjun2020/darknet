@@ -578,6 +578,7 @@ typedef struct load_args{
     tree *hierarchy;
 
     int espcn_scale; //added for espcn
+    float *gaussian_filter;
 } load_args;
 
 

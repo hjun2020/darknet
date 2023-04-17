@@ -35,7 +35,7 @@ data load_go(char *filename);
 // added for espcn
 data load_data_enhence(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale);
 data load_data_espcn_batch(int n, float *im_data, int h_len, int w_len, int h, int w, int c, int idx, int h_offset, int w_offset, int h_extra_offset, int w_extra_offset, int num_cols, int num_rows);
-data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale);
+data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale, float *gaussian_filter);
 /////////////////////////////
 
 

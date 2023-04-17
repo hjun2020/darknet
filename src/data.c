@@ -1147,7 +1147,7 @@ void *load_thread(void *ptr)
     } else if (a.type == TAG_DATA){
         *a.d = load_data_tag(a.paths, a.n, a.m, a.classes, a.min, a.max, a.size, a.angle, a.aspect, a.hue, a.saturation, a.exposure);
     } else if (a.type == ENHENCE_DATA){
-        *a.d = load_data_enhence_ycbcr(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure, a.espcn_scale);
+        *a.d = load_data_enhence_ycbcr(a.n, a.paths, a.m, a.w, a.h, a.num_boxes, a.classes, a.jitter, a.hue, a.saturation, a.exposure, a.espcn_scale, a.gaussian_filter);
     } 
     free(ptr);
     return 0;
@@ -1833,6 +1833,10 @@ image float2im(load_args_espcn args, float *pred)
     int h_offset = args.h_offset_pred;
     int w_extra_offset = args.w_extra_offset_pred;
     int h_extra_offset = args.h_extra_offset_pred;
+
+    int layover_offset_w = w_offset / 2;
+    int layover_offset_h = h_offset / 2;
+
     image im = make_image(out_w, out_h, out_c);    
 
     // float *buffer = pred;
@@ -1853,8 +1857,9 @@ image float2im(load_args_espcn args, float *pred)
         int src_start = in_w * in_h * in_c * i;
         for(j=0; j < in_c; j++){
             for(k=0; k < in_h; k++){
-                // printf("channel: %d\n",k);
+                if (k <= layover_offset_h && i != 0) continue;
                 for(m=0; m < in_w; m++){
+                    if (m <= layover_offset_w && i !=0 ) continue;
                     int dst_idx = j*out_w*out_h + (h_start+k) * out_w + (w_start+m);
                     int src_idx = src_start+  j*in_h*in_w + in_w * k +  m ;
                     // printf("%d, %d!!!!!!!!!!!!\n", dst_idx, src_idx);
@@ -2018,7 +2023,36 @@ data load_data_espcn_batch(int n, float *im_data, int h_len, int w_len, int h, i
 
 }
 
-data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale)
+
+// Convolve the image with the Gaussian kernel
+void convolve_gaussian(float *image, float *kernel, int imageSize, int kernelSize, int in_h, int in_w) {
+    float *tempImage = malloc(sizeof(float) * in_h * in_w);
+    int k = kernelSize / 2;
+    int i, j, x, y;
+    for (i = 0; i < imageSize; i++) {
+        for (j = 0; j < imageSize; j++) {
+            float sum = 0.0f;
+            for (x = -k; x <= k; x++) {
+                for (y = -k; y <= k; y++) {
+                    int ii = i + x;
+                    int jj = j + y;
+                    if (ii >= 0 && ii < imageSize && jj >= 0 && jj < imageSize) {
+                        sum += image[ii * imageSize + jj] * kernel[(x + k) * kernelSize + y + k];
+                    }
+                }
+            }
+            tempImage[i * imageSize + j] = sum;
+        }
+    }
+    for (i = 0; i < imageSize; i++) {
+        for (j = 0; j < imageSize; j++) {
+            image[i * imageSize + j] = tempImage[i * imageSize + j];
+        }
+    }
+    free(tempImage);
+}
+
+data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes, int classes, float jitter, float hue, float saturation, float exposure, int espcn_scale, float *gaussian_filter)
 {
     char **random_paths = get_random_paths(paths, n, m);
     int i;
@@ -2081,14 +2115,11 @@ data load_data_enhence_ycbcr(int n, char **paths, int m, int w, int h, int boxes
 
 
         image sized = resize_image(resize_image(sized_truth, (int) truth_w /3, (int) truth_h /3), truth_w, truth_h);
-        // free(data);
-        // for(int t=0; t<1000; t++){
-        //     printf("%f ",sized.data[t]);
-        // }
-        // printf("\n");
+
+        convolve_gaussian(sized.data, gaussian_filter, w, 7, h, w);
 
 
-
+        // save_image(sized, "data_test/guass_test");
 
         int flip = 0;
         if(flip) flip_image(sized);

@@ -6,6 +6,23 @@
 
 static int coco_ids[] = {1,2,3,4,5,6,7,8,9,10,11,13,14,15,16,17,18,19,20,21,22,23,24,25,27,28,31,32,33,34,35,36,37,38,39,40,41,42,43,44,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,67,70,72,73,74,75,76,77,78,79,80,81,82,84,85,86,87,88,89,90};
 
+void generateKernel(float *kernel, int size, float sigma) {
+    float sum = 0.0f;
+    int i, j;
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            int x = i - size / 2;
+            int y = j - size / 2;
+            kernel[i * size + j] = exp(-(x*x + y*y) / (2 * sigma*sigma));
+            sum += kernel[i * size + j];
+        }
+    }
+    for (i = 0; i < size; i++) {
+        for (j = 0; j < size; j++) {
+            kernel[i * size + j] /= sum;
+        }
+    }
+}
 
 void test_enhancer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, int ngpus, int clear, char *filename)
 {
@@ -115,6 +132,8 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     args.type = ENHENCE_DATA;
 
     args.espcn_scale = (int)sqrt(net->outputs / net->inputs);
+    args.gaussian_filter = malloc(sizeof(float) * 7 * 7);
+    generateKernel(args.gaussian_filter, 7, 1.0f);
 
 
 
@@ -198,6 +217,7 @@ void train_enhencer(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             save_weights(net, buff);
         }
         free_data(train);
+        // sleep(10);
     }
 #ifdef GPU
     if(ngpus != 1) sync_nets(nets, ngpus, 0);
