@@ -24,5 +24,5 @@
 ## How to run training
 * You can train SRCNN neural net using VOC data
 * To download and set up training data, follow the instruction "Training YOLO on VOC" in https://pjreddie.com/darknet/yolo/.
-* Then, run ./darknet enhencer train cfg/voc.data cfg/srcnn1.cfg backup/srcnn1.backup_test in your command line interface.
+* Then, run ./darknet enhancer train cfg/voc.data cfg/srcnn1.cfg backup/srcnn1.backup_test in your command line interface.
 * After each 100 epochs, the trained model will be saved at backup/ directory.
